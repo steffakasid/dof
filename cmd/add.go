@@ -1,3 +1,5 @@
+package cmd
+
 /*
 Copyright © 2020 Steffen Rumpf <github@steffen-rumpf.de>
 
@@ -13,7 +15,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package cmd
 
 import (
 	"github.com/spf13/cobra"
@@ -21,15 +22,17 @@ import (
 
 // addCmd represents the add command
 var addCmd = &cobra.Command{
-	Use:   "add",
+	Use:   "add <file-or-path-to-file>",
 	Args:  cobra.ExactArgs(1),
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "Add a new file to the dot file repository",
+	Long: `Add a new file to the dot file repository and commit it.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+  So basically what it does:
+  git add <file>
+  git commit -m "Add <file>"
+
+  Examples:
+  dof add .zshrc - add .zshrc to dot file repository`,
 	Run: func(cmd *cobra.Command, args []string) {
 		addAndCommit(args[0])
 	},

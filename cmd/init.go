@@ -1,3 +1,5 @@
+package cmd
+
 /*
 Copyright © 2020 Steffen Rumpf <github@steffen-rumpf.de>
 
@@ -13,7 +15,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package cmd
 
 import (
 	"bufio"
@@ -29,13 +30,20 @@ import (
 var initCmd = &cobra.Command{
 	Use:   "init",
 	Args:  cobra.NoArgs,
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "Setup a folder to be used as dot file repository",
+	Long: `Setup a folder to be used as dot file repository
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+  The following steps are executed:
+  1. git init --bare <repo-path>
+  2. git checkout -B <branch-name>
+  3. disable show untracked files in <work-dir>
+  4. add .gitignore to <work-dir> to ignore <repo-path>
+
+  Example Usage:
+  dot init
+  dot alias remote add origin <git-repo-url>
+  dot add .zshrc
+  dot sync --push-only`,
 	Run: func(cmd *cobra.Command, args []string) {
 
 		// git init --bare $HOME/.cfg

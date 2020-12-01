@@ -1,3 +1,5 @@
+package cmd
+
 /*
 Copyright © 2020 Steffen Rumpf <github@steffen-rumpf.de>
 
@@ -13,7 +15,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package cmd
 
 import (
 	"fmt"
@@ -25,7 +26,6 @@ import (
 
 	"github.com/spf13/cobra"
 
-	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
 )
 
@@ -33,13 +33,13 @@ var cfgFile string
 
 var rootCmd = &cobra.Command{
 	Use:   "dof",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
+	Short: "dof - <do>t <f>ile repository tool",
+	Long: `This tool is indended to setup and use a dot file repository. Basically the idea came
+  when reading https://www.atlassian.com/git/tutorials/dotfiles. But finally I didn't like the
+  way to do it with aliases (which must exist and be defined in a dotfile e.g. zshrc. Therefore
+  to avoid this chicken and egg problem. I decided to write a little go program and here it is ;)
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+  The tool expects to use git from the path. So if you don't have git, it will not work!`,
 }
 
 var (
@@ -70,10 +70,6 @@ func init() {
 	userHomeDir, err = os.UserHomeDir()
 	doWePanic(err)
 
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.dof.yaml)")
 
 	rootCmd.PersistentFlags().StringVarP(&repoPath, "repository", "r", path.Join(userHomeDir, ".dof"), "Repository folder to create a bare repository inside (default is $HOME/.dof)")
@@ -89,20 +85,12 @@ func init() {
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
-// initConfig reads in config file and ENV variables if set.
 func initConfig() {
 	if cfgFile != "" {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
 	} else {
-		// Find home directory.
-		home, err := homedir.Dir()
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		// Search config in home directory with name ".dof" (without extension).
-		viper.AddConfigPath(home)
+		viper.AddConfigPath(userHomeDir)
 		viper.SetConfigType("yaml")
 		viper.SetConfigName(".dof")
 	}

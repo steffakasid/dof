@@ -1,3 +1,5 @@
+package cmd
+
 /*
 Copyright © 2020 Steffen Rumpf <github@steffen-rumpf.de>
 
@@ -13,7 +15,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package cmd
 
 import (
 	"os"
@@ -28,29 +29,30 @@ import (
 var checkoutCmd = &cobra.Command{
 	Use:   "checkout <git-repo-url>",
 	Args:  cobra.ExactArgs(1),
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "Checkout a dot file repository from Git and setup dot files",
+	Long: `Checkout a dot file repository from Git and setup dot files.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+  Note: If you already have dot files which are in the repository they will be renamed as backup!
+
+  This command does the following:
+  1. git clone --bare <git-repo-url> <repo-path>
+  2. Disable to show untracked files in <work-dir>
+  3. rename all files in <work-dir> which are in the dot file repository to e.g. .zshrc_before_dof
+  4. git checkout <branch-name>
+
+  Examples:
+  dof checkout git@github.com:steffakasid/my-dot-files.git`,
 	Run: func(cmd *cobra.Command, args []string) {
-		cloneCmd := exec.Command("git", "clone", "--bare", args[0], repoPath)
-		execCmdAndPrint(cloneCmd)
+		gitClone := exec.Command("git", "clone", "--bare", args[0], repoPath)
+		execCmdAndPrint(gitClone)
 
 		doNotShowUntrackedFiles()
 
-		err := os.Chdir(repoPath)
-		doWePanic(err)
-		lsCmd := exec.Command("git", "ls-tree", "--name-only", "main")
-		filesString := execCmdAndReturn(lsCmd)
-		files := strings.Split(filesString, "\n")
-		renameOldFiles(files)
+		renameOldFiles()
 
-		checkoutCmd := *gitAlias
-		checkoutCmd.Args = append(checkoutCmd.Args, "checkout", branch)
-		execCmdAndPrint(&checkoutCmd)
+		gitCheckout := *gitAlias
+		gitCheckout.Args = append(gitCheckout.Args, "checkout", branch)
+		execCmdAndPrint(&gitCheckout)
 	},
 }
 
@@ -58,7 +60,12 @@ func init() {
 	rootCmd.AddCommand(checkoutCmd)
 }
 
-func renameOldFiles(files []string) {
+func renameOldFiles() {
+	err := os.Chdir(repoPath)
+	doWePanic(err)
+	lsCmd := exec.Command("git", "ls-tree", "--name-only", "main")
+	filesString := execCmdAndReturn(lsCmd)
+	files := strings.Split(filesString, "\n")
 	for _, file := range files {
 		os.Rename(path.Join(workDir, file), path.Join(workDir, file+"_before_dof"))
 	}

@@ -1,3 +1,5 @@
+package cmd
+
 /*
 Copyright © 2020 Steffen Rumpf <github@steffen-rumpf.de>
 
@@ -13,7 +15,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package cmd
 
 import (
 	"github.com/spf13/cobra"
@@ -24,17 +25,21 @@ var (
 	dontPull bool
 )
 
-// syncCmd represents the sync command
 var syncCmd = &cobra.Command{
 	Use:   "sync",
 	Args:  cobra.NoArgs,
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "Synchronize local changes with the remote repository",
+	Long: `Synchronize local changes with the remote repository. To do so,
+  the command just executes:
+  1. git push origin <branch-name>
+  2. git pull --rebase
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+  If you pull and there are new files in the remote. You must take care to remove the same files if they're already existing.
+
+  Examples:
+  dof sync             - simply push and pull changes to/from the remote repository
+  dof sync --push-only - only push changes to the remote repository
+  dof sync --pull-only - only pull changes from the remote repository`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if !dontPush {
 			pushCmd := *gitAlias
