@@ -24,6 +24,12 @@ func execCmdAndPrint(cmd *exec.Cmd) {
 	doWePanic(err)
 }
 
+func execCmdAndReturn(cmd *exec.Cmd) string {
+	output, err := cmd.Output()
+	doWePanic(err)
+	return string(output)
+}
+
 func doWePanic(err error) {
 	if err != nil {
 		panic(err)

@@ -44,12 +44,7 @@ to quickly create a Cobra application.`,
 
 		execCmdAndPrint(gitInit)
 
-		// alias config='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME'
-		// config config --local status.showUntrackedFiles no
-		gitConfigure := gitAlias
-		gitConfigArgs := []string{"config", "--local", "status.showUntrackedFiles", "no"}
-		gitConfigure.Args = append(gitConfigure.Args, gitConfigArgs...)
-		execCmdAndPrint(gitConfigure)
+		doNotShowUntrackedFiles()
 
 		addGitIgnore()
 
@@ -83,4 +78,12 @@ func addGitIgnore() {
 
 	addAndCommit(gitIgnore)
 }
+
+func doNotShowUntrackedFiles() {
+	// alias config='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME'
+	// config config --local status.showUntrackedFiles no
+	gitConfigure := *gitAlias
+	gitConfigArgs := []string{"config", "--local", "status.showUntrackedFiles", "no"}
+	gitConfigure.Args = append(gitConfigure.Args, gitConfigArgs...)
+	execCmdAndPrint(&gitConfigure)
 }
