@@ -19,7 +19,9 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"path"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 
@@ -29,7 +31,6 @@ import (
 
 var cfgFile string
 
-// rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "dof",
 	Short: "A brief description of your application",
@@ -39,14 +40,14 @@ examples and usage of using your application. For example:
 Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	//	Run: func(cmd *cobra.Command, args []string) { },
 }
 
 var (
-	userHomeDir string
-	repoFolder  string
+	userHomeDir    string
+	repoFolder     string
+	workDir        string
+	repoFolderName string
+	gitAlias       *exec.Cmd
 )
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -77,6 +78,8 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
+	workDir, repoFolderName = filepath.Split(repoFolder)
+	gitAlias = exec.Command("git", "--git-dir="+repoFolder, "--work-tree="+workDir)
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.

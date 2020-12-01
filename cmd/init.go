@@ -16,8 +16,11 @@ limitations under the License.
 package cmd
 
 import (
+	"bufio"
 	"log"
+	"os"
 	"os/exec"
+	"path"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -42,8 +45,12 @@ to quickly create a Cobra application.`,
 
 		// alias config='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME'
 		// config config --local status.showUntrackedFiles no
-		gitConfigure := exec.Command("git", "--git-dir="+repoFolder, "--work-tree="+userHomeDir, "config", "--local", "status.showUntrackedFiles", "no")
+		gitConfigure := gitAlias
+		gitConfigArgs := []string{"config", "--local", "status.showUntrackedFiles", "no"}
+		gitConfigure.Args = append(gitConfigure.Args, gitConfigArgs...)
 		execCmdAndPrint(gitConfigure)
+
+		addGitIgnore()
 
 		err := viper.SafeWriteConfig()
 		if err != nil {
@@ -54,4 +61,22 @@ to quickly create a Cobra application.`,
 
 func init() {
 	rootCmd.AddCommand(initCmd)
+}
+
+func addGitIgnore() {
+
+	file, err := os.Create(path.Join(workDir, ".gitignore"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	writer := bufio.NewWriter(file)
+
+	linesToWrite := []string{repoFolderName}
+	for _, line := range linesToWrite {
+		_, err := writer.WriteString(line + "\n")
+		if err != nil {
+			log.Fatalf("Got error while writing to a file. Err: %s", err.Error())
+		}
+	}
+	writer.Flush()
 }
