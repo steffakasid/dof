@@ -16,6 +16,7 @@ limitations under the License.
 package cmd
 
 import (
+	"log"
 	"os/exec"
 
 	"github.com/spf13/cobra"
@@ -35,15 +36,18 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 
+		// git init --bare $HOME/.cfg
 		gitInit := exec.Command("git", "init", "--bare", repoFolder)
 		execCmdAndPrint(gitInit)
 
-		gitConfigure := exec.Command("git", "--git-dir", repoFolder, "--work-tree", userHomeDir, "config", "--local", "status.showUntrackedFiles", "no")
+		// alias config='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME'
+		// config config --local status.showUntrackedFiles no
+		gitConfigure := exec.Command("git", "--git-dir="+repoFolder, "--work-tree="+userHomeDir, "config", "--local", "status.showUntrackedFiles", "no")
 		execCmdAndPrint(gitConfigure)
 
 		err := viper.SafeWriteConfig()
 		if err != nil {
-			panic(err)
+			log.Print(err)
 		}
 	},
 }
