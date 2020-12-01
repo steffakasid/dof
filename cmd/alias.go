@@ -23,13 +23,21 @@ var aliasCmd = &cobra.Command{
 	Use:                "alias",
 	Args:               cobra.MinimumNArgs(1),
 	DisableFlagParsing: true,
-	Short:              "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short:              "Run any git command",
+	Long: `Basically this command is an alias to run git subcommand.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	In Unix you could think about this command as:
+	alias config='/usr/bin/git --git-dir=$HOME/.dof/ --work-tree=$HOME'
+
+	Examples:
+	To run 'git --git-dir=$HOME/.dof/ --work-tree=$HOME status'
+	you could just run 'dof alias status'
+	
+	To view the remote you would just run:
+	'dof alias remote -vv'
+	
+	To force push to the remote you could just run:
+	'dof alias push origin main --force`,
 	Run: func(cmd *cobra.Command, args []string) {
 		aliasCmd := *gitAlias
 		aliasCmd.Args = append(aliasCmd.Args, args...)
@@ -39,14 +47,4 @@ to quickly create a Cobra application.`,
 
 func init() {
 	rootCmd.AddCommand(aliasCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// aliasCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// aliasCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
