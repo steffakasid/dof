@@ -40,7 +40,8 @@ to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 
 		// git init --bare $HOME/.cfg
-		gitInit := exec.Command("git", "init", "--bare", repoFolder)
+		gitInit := exec.Command("git", "init", "--bare", repoPath)
+
 		execCmdAndPrint(gitInit)
 
 		// alias config='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME'
@@ -71,7 +72,7 @@ func addGitIgnore() {
 	}
 	writer := bufio.NewWriter(file)
 
-	linesToWrite := []string{repoFolderName}
+	linesToWrite := []string{repoPathName}
 	for _, line := range linesToWrite {
 		_, err := writer.WriteString(line + "\n")
 		if err != nil {

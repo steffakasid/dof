@@ -43,11 +43,11 @@ to quickly create a Cobra application.`,
 }
 
 var (
-	userHomeDir    string
-	repoFolder     string
-	workDir        string
-	repoFolderName string
-	gitAlias       *exec.Cmd
+	userHomeDir  string
+	repoPath     string
+	workDir      string
+	repoPathName string
+	gitAlias     *exec.Cmd
 )
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -70,9 +70,12 @@ func init() {
 	// will be global for your application.
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.dof.yaml)")
-	rootCmd.PersistentFlags().StringVarP(&repoFolder, "repository", "r", path.Join(userHomeDir, ".dof"), "repository file to create a bare repository inside (default is $HOME/.dof")
+	rootCmd.PersistentFlags().StringVarP(&repoPath, "repository", "r", path.Join(userHomeDir, ".dof"), "repository file to create a bare repository inside (default is $HOME/.dof")
 	viper.BindPFlag("repository", rootCmd.Flags().Lookup("repository"))
+	err = os.MkdirAll(repoPath, 0700)
 	doWePanic(err)
+	workDir, repoPathName = filepath.Split(repoPath)
+	gitAlias = exec.Command("git", "--git-dir="+repoPath, "--work-tree="+workDir)
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
