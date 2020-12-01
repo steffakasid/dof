@@ -21,6 +21,10 @@ func execCmdAndPrint(cmd *exec.Cmd) {
 		fmt.Println(stderr.String())
 	}
 
+	doWePanic(err)
+}
+
+func doWePanic(err error) {
 	if err != nil {
 		panic(err)
 	}

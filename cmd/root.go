@@ -63,9 +63,7 @@ func init() {
 	var err error
 	cobra.OnInitialize(initConfig)
 	userHomeDir, err = os.UserHomeDir()
-	if err != nil {
-		panic(err)
-	}
+	doWePanic(err)
 
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
@@ -74,12 +72,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.dof.yaml)")
 	rootCmd.PersistentFlags().StringVarP(&repoFolder, "repository", "r", path.Join(userHomeDir, ".dof"), "repository file to create a bare repository inside (default is $HOME/.dof")
 	viper.BindPFlag("repository", rootCmd.Flags().Lookup("repository"))
-	err = os.MkdirAll(repoFolder, 0700)
-	if err != nil {
-		panic(err)
-	}
-	workDir, repoFolderName = filepath.Split(repoFolder)
-	gitAlias = exec.Command("git", "--git-dir="+repoFolder, "--work-tree="+workDir)
+	doWePanic(err)
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
