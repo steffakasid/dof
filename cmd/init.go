@@ -23,7 +23,6 @@ import (
 	"path"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 // initCmd represents the init command
@@ -41,17 +40,14 @@ to quickly create a Cobra application.`,
 
 		// git init --bare $HOME/.cfg
 		gitInit := exec.Command("git", "init", "--bare", repoPath)
-
 		execCmdAndPrint(gitInit)
+
+		gitCheckout := exec.Command("git", "checkout", "-B", branch)
+		execCmdAndPrint(gitCheckout)
 
 		doNotShowUntrackedFiles()
 
 		addGitIgnore()
-
-		err := viper.SafeWriteConfig()
-		if err != nil {
-			log.Print(err)
-		}
 	},
 }
 

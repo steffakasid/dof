@@ -49,7 +49,7 @@ to quickly create a Cobra application.`,
 		renameOldFiles(files)
 
 		checkoutCmd := *gitAlias
-		checkoutCmd.Args = append(checkoutCmd.Args, "checkout")
+		checkoutCmd.Args = append(checkoutCmd.Args, "checkout", branch)
 		execCmdAndPrint(&checkoutCmd)
 	},
 }

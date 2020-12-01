@@ -47,6 +47,7 @@ var (
 	repoPath     string
 	workDir      string
 	repoPathName string
+	branch       string
 	gitAlias     *exec.Cmd
 )
 
@@ -56,6 +57,10 @@ func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
+	}
+	err := viper.SafeWriteConfig()
+	if err != nil {
+		log.Print(err)
 	}
 }
 
@@ -70,15 +75,17 @@ func init() {
 	// will be global for your application.
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.dof.yaml)")
-	rootCmd.PersistentFlags().StringVarP(&repoPath, "repository", "r", path.Join(userHomeDir, ".dof"), "repository file to create a bare repository inside (default is $HOME/.dof")
+
+	rootCmd.PersistentFlags().StringVarP(&repoPath, "repository", "r", path.Join(userHomeDir, ".dof"), "Repository folder to create a bare repository inside (default is $HOME/.dof)")
 	viper.BindPFlag("repository", rootCmd.Flags().Lookup("repository"))
 	err = os.MkdirAll(repoPath, 0700)
 	doWePanic(err)
 	workDir, repoPathName = filepath.Split(repoPath)
 	gitAlias = exec.Command("git", "--git-dir="+repoPath, "--work-tree="+workDir)
 
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
+	checkoutCmd.Flags().StringVarP(&branch, "branch", "b", "main", "Set the branch to use (default is main)")
+	viper.BindPFlag("branch", checkoutCmd.Flags().Lookup("branch"))
+
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
