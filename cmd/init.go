@@ -65,8 +65,8 @@ func init() {
 }
 
 func addGitIgnore() {
-
-	file, err := os.Create(path.Join(workDir, ".gitignore"))
+	gitIgnore := path.Join(workDir, ".gitignore")
+	file, err := os.Create(gitIgnore)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -80,4 +80,7 @@ func addGitIgnore() {
 		}
 	}
 	writer.Flush()
+
+	addAndCommit(gitIgnore)
+}
 }

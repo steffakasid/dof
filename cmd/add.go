@@ -31,20 +31,24 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		// config add .vimrc
-		gitAdd := *gitAlias
-		gitAddArgs := []string{"add", args[0]}
-		gitAdd.Args = append(gitAdd.Args, gitAddArgs...)
-		execCmdAndPrint(&gitAdd)
-
-		// config commit -m "Add vimrc"
-		gitCommit := *gitAlias
-		gitCommitArgs := []string{"commit", "-m", "Add " + args[0]}
-		gitCommit.Args = append(gitCommit.Args, gitCommitArgs...)
-		execCmdAndPrint(&gitCommit)
+		addAndCommit(args[0])
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(addCmd)
+}
+
+func addAndCommit(file string) {
+	// config add .vimrc
+	gitAdd := *gitAlias
+	gitAddArgs := []string{"add", file}
+	gitAdd.Args = append(gitAdd.Args, gitAddArgs...)
+	execCmdAndPrint(&gitAdd)
+
+	// config commit -m "Add vimrc"
+	gitCommit := *gitAlias
+	gitCommitArgs := []string{"commit", "-m", "Add " + file}
+	gitCommit.Args = append(gitCommit.Args, gitCommitArgs...)
+	execCmdAndPrint(&gitCommit)
 }
