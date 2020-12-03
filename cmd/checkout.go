@@ -17,14 +17,12 @@ limitations under the License.
 */
 
 import (
-	"log"
 	"os"
 	"os/exec"
 	"path"
 	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 // checkoutCmd represents the checkout command
@@ -55,11 +53,6 @@ var checkoutCmd = &cobra.Command{
 		gitCheckout := *gitAlias
 		gitCheckout.Args = append(gitCheckout.Args, "checkout", branch)
 		execCmdAndPrint(&gitCheckout)
-
-		err := viper.WriteConfig()
-		if err != nil {
-			log.Print(err)
-		}
 	},
 }
 

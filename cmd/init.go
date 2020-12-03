@@ -24,7 +24,6 @@ import (
 	"path"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 // initCmd represents the init command
@@ -57,11 +56,6 @@ var initCmd = &cobra.Command{
 		doNotShowUntrackedFiles()
 
 		addGitIgnore()
-
-		err := viper.WriteConfig()
-		if err != nil {
-			log.Print(err)
-		}
 	},
 }
 

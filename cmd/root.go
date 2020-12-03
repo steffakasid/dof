@@ -17,7 +17,6 @@ limitations under the License.
 */
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -55,8 +54,11 @@ var (
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		log.Fatal(err)
+	}
+
+	if err := viper.WriteConfig(); err != nil {
+		log.Fatal(err)
 	}
 }
 
@@ -68,15 +70,17 @@ func init() {
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.dof.yaml)")
 
-	rootCmd.PersistentFlags().StringVarP(&repoPath, "repository", "r", path.Join(userHomeDir, ".dof"), "Repository folder to create a bare repository inside")
-	viper.BindPFlag("repository", rootCmd.Flags().Lookup("repository"))
+	viper.SetDefault("repository", path.Join(userHomeDir, ".dof"))
+	rootCmd.PersistentFlags().StringVarP(&repoPath, "repository", "r", viper.GetString("repository"), "Repository folder to create a bare repository inside")
+	viper.BindPFlag("repository", rootCmd.PersistentFlags().Lookup("repository"))
 	err = os.MkdirAll(repoPath, 0700)
 	doWePanic(err)
 	workDir, repoPathName = filepath.Split(repoPath)
 	gitAlias = exec.Command("git", "--git-dir="+repoPath, "--work-tree="+workDir)
 
-	rootCmd.PersistentFlags().StringVarP(&branch, "branch", "b", "main", "Set the branch to use")
-	viper.BindPFlag("branch", checkoutCmd.Flags().Lookup("branch"))
+	viper.SetDefault("branch", "main")
+	rootCmd.PersistentFlags().StringVarP(&branch, "branch", "b", viper.GetString("branch"), "Set the branch to use")
+	viper.BindPFlag("branch", rootCmd.PersistentFlags().Lookup("branch"))
 
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
