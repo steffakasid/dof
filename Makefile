@@ -1,9 +1,10 @@
-include .env
 
 PROJECTNAME=$(shell basename "$(PWD)")
+VERSION?=$(shell git describe --tags --always --dirty --match=v* 2> /dev/null || \
+            echo v0)
 
 # Go related variables.
-GOBASE=$(shell pwd)
+GOBASE=${HOME}/Workspace/go
 GOPATH="$(GOBASE)/vendor:$(GOBASE)"
 GOBIN=$(GOBASE)/bin
 GOFILES=$(wildcard *.go)
@@ -22,7 +23,7 @@ install: go-get
 
 ## start: Start in development mode. Auto-starts when code changes.
 start:
-    bash -c "trap 'make stop' EXIT; $(MAKE) compile start-server watch run='make compile start-server'"
+		bash -c "trap 'make stop' EXIT; $(MAKE) compile start-server watch run='make compile start-server'"
 
 ## stop: Stop development mode.
 stop: stop-server
@@ -62,7 +63,10 @@ go-compile: go-clean go-get go-build
 
 go-build:
 	@echo "  >  Building binary..."
-	@GOPATH=$(GOPATH) GOBIN=$(GOBIN) go build -o $(GOBIN)/$(PROJECTNAME) $(GOFILES)
+	@GOPATH=$(GOPATH) GOBIN=$(GOBIN) go build \
+				-tags release \
+				-ldflags '-X github.com/steffakasid/dof/cmd.version=$(VERSION)' \
+				-o $(GOBIN)/$(PROJECTNAME) $(GOFILES)
 
 go-generate:
 	@echo "  >  Generating dependency files..."

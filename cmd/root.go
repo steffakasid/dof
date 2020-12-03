@@ -29,6 +29,7 @@ import (
 )
 
 var cfgFile string
+var version = "not set"
 
 var rootCmd = &cobra.Command{
 	Use:   "dof",
