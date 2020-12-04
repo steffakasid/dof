@@ -68,6 +68,16 @@ go-build:
 				-ldflags '-X github.com/steffakasid/dof/cmd.version=$(VERSION)' \
 				-o $(GOBIN)/$(PROJECTNAME) $(GOFILES)
 
+go-build-all:
+	@GOOS=darwin  GOARCH=amd64 GOPATH=$(GOPATH) GOBIN=$(GOBIN) go build \
+			-tags release \
+			-ldflags '-X github.com/steffakasid/dof/cmd.version=$(VERSION)' \
+			-o $(GOBIN)/main-freebsd-386 $(GOFILES)
+	@GOOS=linux GOARCH=amd64 GOPATH=$(GOPATH) GOBIN=$(GOBIN) go build \
+			-tags release \
+			-ldflags '-X github.com/steffakasid/dof/cmd.version=$(VERSION)' \
+			-o $(GOBIN)/main-linux-386 $(GOFILES)
+
 go-generate:
 	@echo "  >  Generating dependency files..."
 	@GOPATH=$(GOPATH) GOBIN=$(GOBIN) go generate $(generate)
