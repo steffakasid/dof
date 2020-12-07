@@ -17,6 +17,7 @@ limitations under the License.
 */
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -47,7 +48,6 @@ var (
 	repoPath     string
 	workDir      string
 	repoPathName string
-	branch       string
 	gitAlias     *exec.Cmd
 )
 
@@ -65,22 +65,25 @@ func Execute() {
 
 func init() {
 	var err error
-	cobra.OnInitialize(initConfig)
 	userHomeDir, err = os.UserHomeDir()
 	doWePanic(err)
+	cobra.OnInitialize(initConfig, initFlags)
+}
 
+func initFlags() {
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.dof.yaml)")
 
 	viper.SetDefault("repository", path.Join(userHomeDir, ".dof"))
-	rootCmd.PersistentFlags().StringVarP(&repoPath, "repository", "r", viper.GetString("repository"), "Repository folder to create a bare repository inside")
+	rootCmd.PersistentFlags().StringP("repository", "r", viper.GetString("repository"), "Repository folder to create a bare repository inside")
 	viper.BindPFlag("repository", rootCmd.PersistentFlags().Lookup("repository"))
-	err = os.MkdirAll(repoPath, 0700)
+	err := os.MkdirAll(viper.GetString("repository"), 0700)
 	doWePanic(err)
-	workDir, repoPathName = filepath.Split(repoPath)
-	gitAlias = exec.Command("git", "--git-dir="+repoPath, "--work-tree="+workDir)
+	workDir, repoPathName = filepath.Split(viper.GetString("repository"))
+	gitAlias = exec.Command("git", "--git-dir="+viper.GetString("repository"), "--work-tree="+workDir)
 
 	viper.SetDefault("branch", "main")
-	rootCmd.PersistentFlags().StringVarP(&branch, "branch", "b", viper.GetString("branch"), "Set the branch to use")
+	fmt.Println("branch:", viper.GetString("branch"))
+	rootCmd.PersistentFlags().StringP("branch", "b", viper.GetString("branch"), "Set the branch to use")
 	viper.BindPFlag("branch", rootCmd.PersistentFlags().Lookup("branch"))
 
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
