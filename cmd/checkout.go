@@ -63,7 +63,7 @@ func init() {
 func renameOldFiles() {
 	err := os.Chdir(repoPath)
 	doWePanic(err)
-	lsCmd := exec.Command("git", "ls-tree", "--name-only", "main")
+	lsCmd := exec.Command("git", "ls-tree", "--name-only", branch)
 	filesString := execCmdAndReturn(lsCmd)
 	files := strings.Split(filesString, "\n")
 	for _, file := range files {
