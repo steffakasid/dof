@@ -24,6 +24,7 @@ import (
 	"path"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // initCmd represents the init command
@@ -50,7 +51,7 @@ var initCmd = &cobra.Command{
 		gitInit := exec.Command("git", "init", "--bare", repoPath)
 		execCmdAndPrint(gitInit)
 
-		gitCheckout := exec.Command("git", "checkout", "-B", branch)
+		gitCheckout := exec.Command("git", "checkout", "-B", viper.GetString("branch"))
 		execCmdAndPrint(gitCheckout)
 
 		doNotShowUntrackedFiles()

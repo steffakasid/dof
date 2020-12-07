@@ -23,6 +23,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // checkoutCmd represents the checkout command
@@ -51,7 +52,7 @@ var checkoutCmd = &cobra.Command{
 		renameOldFiles()
 
 		gitCheckout := *gitAlias
-		gitCheckout.Args = append(gitCheckout.Args, "checkout", branch)
+		gitCheckout.Args = append(gitCheckout.Args, "checkout", viper.GetString("branch"))
 		execCmdAndPrint(&gitCheckout)
 	},
 }
@@ -63,7 +64,7 @@ func init() {
 func renameOldFiles() {
 	err := os.Chdir(repoPath)
 	doWePanic(err)
-	lsCmd := exec.Command("git", "ls-tree", "--name-only", branch)
+	lsCmd := exec.Command("git", "ls-tree", "--name-only", viper.GetString("branch"))
 	filesString := execCmdAndReturn(lsCmd)
 	files := strings.Split(filesString, "\n")
 	for _, file := range files {

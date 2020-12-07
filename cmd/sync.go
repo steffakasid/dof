@@ -18,6 +18,7 @@ limitations under the License.
 
 import (
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var (
@@ -43,7 +44,7 @@ var syncCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		if !dontPush {
 			pushCmd := *gitAlias
-			pushCmd.Args = append(pushCmd.Args, "push", "origin", branch, "-u")
+			pushCmd.Args = append(pushCmd.Args, "push", "origin", viper.GetString("branch"), "-u")
 			execCmdAndPrint(&pushCmd)
 		}
 		if !dontPull {
