@@ -32,17 +32,25 @@ var syncCmd = &cobra.Command{
 	Short: "Synchronize local changes with the remote repository",
 	Long: `Synchronize local changes with the remote repository. To do so,
   the command just executes:
-  1. git push origin <branch-name>
-  2. git pull --rebase
+  1. git add --all
+  2. git commit -a -m "Synchronized dot files"
+  3. git push origin <branch-name>
+  4. git pull --rebase
 
   If you pull and there are new files in the remote. You must take care to remove the same files if they're already existing.
 
   Examples:
   dof sync             - simply push and pull changes to/from the remote repository
-  dof sync --push-only - only push changes to the remote repository
+  dof sync --push-only - only add, commit and push changes to the remote repository
   dof sync --pull-only - only pull changes from the remote repository`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if !dontPush {
+      addCmd := *gitAlias
+      addCmd.Args = append(addCmd.Args, "add", "--all")
+      execCmdAndPrint(addCmd)
+      commitCmd := *gitAlias
+      commitCmd.Args = append(commitCmd.Args, "commit", "-a", "-m", "Synchronized dot files")
+      execCmdAndPrint(commitCmd)
 			pushCmd := *gitAlias
 			pushCmd.Args = append(pushCmd.Args, "push", "origin", viper.GetString("branch"), "-u")
 			execCmdAndPrint(&pushCmd)
