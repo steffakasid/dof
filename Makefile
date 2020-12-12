@@ -4,7 +4,7 @@ VERSION?=$(shell git describe --tags --always --dirty --match=v* 2> /dev/null ||
             echo v0)
 
 # Go related variables.
-GOBASE=${HOME}/Workspace/go
+GOBASE=${HOME}/Projects/go
 GOPATH="$(GOBASE)/vendor:$(GOBASE)"
 GOBIN=$(GOBASE)/bin
 GOFILES=$(wildcard *.go)
@@ -87,7 +87,10 @@ go-get:
 	@GOPATH=$(GOPATH) GOBIN=$(GOBIN) go get $(get)
 
 go-install:
-	@GOPATH=$(GOPATH) GOBIN=$(GOBIN) go install $(GOFILES)
+	@GOPATH=$(GOPATH) GOBIN=$(GOBIN) go install \
+			-tags release \
+			-ldflags '-X github.com/steffakasid/dof/cmd.version=$(VERSION)' \
+			$(GOFILES)
 
 go-clean:
 	@echo "  >  Cleaning build cache"
