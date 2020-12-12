@@ -47,10 +47,10 @@ var syncCmd = &cobra.Command{
 		if !dontPush {
       addCmd := *gitAlias
       addCmd.Args = append(addCmd.Args, "add", "--all")
-      execCmdAndPrint(addCmd)
+      execCmdAndPrint(&addCmd)
       commitCmd := *gitAlias
       commitCmd.Args = append(commitCmd.Args, "commit", "-a", "-m", "Synchronized dot files")
-      execCmdAndPrint(commitCmd)
+      execCmdAndPrint(&commitCmd)
 			pushCmd := *gitAlias
 			pushCmd.Args = append(pushCmd.Args, "push", "origin", viper.GetString("branch"), "-u")
 			execCmdAndPrint(&pushCmd)
