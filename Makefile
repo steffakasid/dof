@@ -4,7 +4,7 @@ VERSION?=$(shell git describe --tags --always --dirty --match=v* 2> /dev/null ||
             echo v0)
 
 # Go related variables.
-GOBASE=${HOME}/Projects/go
+GOBASE=${HOME}/Projects/Go
 GOPATH="$(GOBASE)/vendor:$(GOBASE)"
 GOBIN=$(GOBASE)/bin
 GOFILES=$(wildcard *.go)
