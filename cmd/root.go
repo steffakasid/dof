@@ -85,8 +85,6 @@ func initFlags() {
 	fmt.Println("branch:", viper.GetString("branch"))
 	rootCmd.PersistentFlags().StringP("branch", "b", viper.GetString("branch"), "Set the branch to use")
 	viper.BindPFlag("branch", rootCmd.PersistentFlags().Lookup("branch"))
-
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
 func initConfig() {
