@@ -46,11 +46,12 @@ var initCmd = &cobra.Command{
   dot add .zshrc
   dot sync --push-only`,
 	Run: func(cmd *cobra.Command, args []string) {
-
+		logger.Info("Initialize git bare repository...")
 		// git init --bare $HOME/.cfg
 		gitInit := exec.Command("git", "init", "--bare", repoPath)
 		execCmdAndPrint(gitInit)
 
+		logger.Infof("Checkout %s branch\n", viper.GetString("branch"))
 		gitCheckout := exec.Command("git", "checkout", "-B", viper.GetString("branch"))
 		execCmdAndPrint(gitCheckout)
 
@@ -62,6 +63,9 @@ var initCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(initCmd)
+	if logger == nil {
+		logger = NewOutputLogger(1)
+	}
 }
 
 func addGitIgnore() {

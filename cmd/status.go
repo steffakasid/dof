@@ -1,3 +1,5 @@
+package cmd
+
 /*
 Copyright © 2021 Steffen Rumpf <github@steffen-rumpf.de>
 
@@ -13,7 +15,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package cmd
 
 import (
 	"github.com/spf13/cobra"
@@ -30,11 +31,15 @@ var statusCmd = &cobra.Command{
 
 func status(cmd *cobra.Command, args []string) {
 	gitStatus := *gitAlias
-	gitStatusArgs := []string{"status"}
+	gitStatusArgs := []string{"status", "-s"}
 	gitStatus.Args = append(gitStatus.Args, gitStatusArgs...)
+	logger.Info("Status of dof repository...")
 	execCmdAndPrint(&gitStatus)
 }
 
 func init() {
 	rootCmd.AddCommand(statusCmd)
+	if logger == nil {
+		logger = NewOutputLogger(1)
+	}
 }

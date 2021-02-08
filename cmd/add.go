@@ -40,9 +40,13 @@ var addCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(addCmd)
+	if logger == nil {
+		logger = NewOutputLogger(1)
+	}
 }
 
 func addAndCommit(file string) {
+	logger.Infof("Add file %s to dof repository", file)
 	// config add .vimrc
 	gitAdd := *gitAlias
 	gitAddArgs := []string{"add", file}

@@ -17,8 +17,6 @@ limitations under the License.
 */
 
 import (
-	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"path"
@@ -49,22 +47,26 @@ var (
 	workDir      string
 	repoPathName string
 	gitAlias     *exec.Cmd
+	logger       *Logger
 )
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		log.Fatal(err)
+		logger.Fatal(err)
 	}
 
 	if err := viper.WriteConfig(); err != nil {
-		log.Fatal(err)
+		logger.Fatal(err)
 	}
 }
 
 func init() {
 	var err error
+	if logger == nil {
+		logger = NewOutputLogger(1)
+	}
 	userHomeDir, err = os.UserHomeDir()
 	doWePanic(err)
 	cobra.OnInitialize(initConfig, initFlags)
@@ -75,16 +77,16 @@ func initFlags() {
 
 	viper.SetDefault("repository", path.Join(userHomeDir, ".dof"))
 	rootCmd.PersistentFlags().StringP("repository", "r", viper.GetString("repository"), "Repository folder to create a bare repository inside")
-	viper.BindPFlag("repository", rootCmd.PersistentFlags().Lookup("repository"))
-	err := os.MkdirAll(viper.GetString("repository"), 0700)
-	doWePanic(err)
+	doWePanic(viper.BindPFlag("repository", rootCmd.PersistentFlags().Lookup("repository")))
+	doWePanic(os.MkdirAll(viper.GetString("repository"), 0700))
+
 	workDir, repoPathName = filepath.Split(viper.GetString("repository"))
 	gitAlias = exec.Command("git", "--git-dir="+viper.GetString("repository"), "--work-tree="+workDir)
 
 	viper.SetDefault("branch", "main")
-	fmt.Println("branch:", viper.GetString("branch"))
+	logger.Debugln("branch:", viper.GetString("branch"))
 	rootCmd.PersistentFlags().StringP("branch", "b", viper.GetString("branch"), "Set the branch to use")
-	viper.BindPFlag("branch", rootCmd.PersistentFlags().Lookup("branch"))
+	doWePanic(viper.BindPFlag("branch", rootCmd.PersistentFlags().Lookup("branch")))
 }
 
 func initConfig() {
@@ -101,12 +103,12 @@ func initConfig() {
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
-		log.Print("Using config file:", viper.ConfigFileUsed())
+		logger.Infof("Using config file: %s", viper.ConfigFileUsed())
 	} else {
-		log.Print(err)
+		logger.Error(err)
 		err := viper.SafeWriteConfig()
 		if err != nil {
-			log.Print(err)
+			logger.Fatal(err)
 		}
 	}
 }
