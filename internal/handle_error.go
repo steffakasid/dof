@@ -16,6 +16,6 @@ func (eh *ErrorHandler) IsError(err error) {
 
 func (eh *ErrorHandler) IsFatalError(err error) {
 	if err != nil {
-		eh.logger.Error(err)
+		eh.logger.Fatal(err)
 	}
 }
