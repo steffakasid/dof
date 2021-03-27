@@ -17,7 +17,9 @@ limitations under the License.
 */
 
 import (
+	"github.com/go-git/go-git/v5"
 	"github.com/spf13/cobra"
+	"github.com/steffakasid/dof/internal"
 )
 
 // statusCmd represents the status command
@@ -30,16 +32,20 @@ var statusCmd = &cobra.Command{
 }
 
 func status(cmd *cobra.Command, args []string) {
-	gitStatus := *gitAlias
-	gitStatusArgs := []string{"status", "-s"}
-	gitStatus.Args = append(gitStatus.Args, gitStatusArgs...)
 	logger.Info("Status of dof repository...")
-	execCmdAndPrint(&gitStatus)
+	logger.Info("repoPath:", repoPath)
+	repo, err := git.PlainOpen(repoPath)
+	eh.IsFatalError(err)
+	worktree, err := repo.Worktree()
+	eh.IsFatalError(err)
+	status, err := worktree.Status()
+	eh.IsFatalError(err)
+	logger.Info(status.String())
 }
 
 func init() {
 	rootCmd.AddCommand(statusCmd)
 	if logger == nil {
-		logger = NewOutputLogger(1)
+		logger = internal.NewOutputLogger(1)
 	}
 }

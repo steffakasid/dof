@@ -22,6 +22,7 @@ import (
 	"path"
 	"strings"
 
+	"github.com/go-git/go-git/v5"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -44,20 +45,29 @@ var checkoutCmd = &cobra.Command{
   Examples:
   dof checkout git@github.com:steffakasid/my-dot-files.git`,
 	Run: func(cmd *cobra.Command, args []string) {
-		logger.Info("Cloning bare repo...")
-		gitClone := exec.Command("git", "clone", "--bare", args[0], viper.GetString("repository"))
-		execCmdAndPrint(gitClone)
+		opts := git.CloneOptions{
+			URL: args[0],
+			// TODO: we might add auth-method here for private repos
+			Progress: os.Stdout,
+		}
+		repo, err := git.PlainClone(repoPath, true, &opts)
+		eh.IsFatalError(err)
 
-		logger.Info(("Configure to not show untracked fiels..."))
-		doNotShowUntrackedFiles()
+		doNotShowUntrackedFiles(repo)
 
 		logger.Info("Rename old files as backup...")
 		renameOldFiles()
 
-		logger.Info("Checkout branch...")
-		gitCheckout := *gitAlias
-		gitCheckout.Args = append(gitCheckout.Args, "checkout", viper.GetString("branch"))
-		execCmdAndPrint(&gitCheckout)
+		wt, err := repo.Worktree()
+		eh.IsFatalError(err)
+
+		branch, err := repo.Branch(viper.GetString("branch"))
+
+		coOpts := &git.CheckoutOptions{
+			Branch: branch.Merge,
+			Keep:   true,
+		}
+		wt.Checkout(coOpts)
 	},
 }
 
@@ -66,15 +76,10 @@ func init() {
 }
 
 func renameOldFiles() {
-	err := os.Chdir(workDir)
-	doWePanic(err)
-
-	gitTree := *gitAlias
-
-	gitTreeArgs := []string{"ls-tree", "--name-only", viper.GetString("branch")}
-	gitTree.Args = append(gitTree.Args, gitTreeArgs...)
-
-	filesString := execCmdAndReturn(&gitTree)
+	err := os.Chdir(repoPath)
+	eh.IsFatalError(err)
+	lsCmd := exec.Command("git", "ls-tree", "--name-only", viper.GetString("branch"))
+	filesString := execCmdAndReturn(lsCmd)
 	files := strings.Split(filesString, "\n")
 	for _, file := range files {
 		logger.Infof("Rename %s to %s", path.Join(workDir, file), path.Join(workDir, file+"_before_dof"))

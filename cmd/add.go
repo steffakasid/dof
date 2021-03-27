@@ -17,7 +17,11 @@ limitations under the License.
 */
 
 import (
+	"fmt"
+
+	"github.com/go-git/go-git/v5"
 	"github.com/spf13/cobra"
+	"github.com/steffakasid/dof/internal"
 )
 
 // addCmd represents the add command
@@ -41,21 +45,22 @@ var addCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(addCmd)
 	if logger == nil {
-		logger = NewOutputLogger(1)
+		logger = internal.NewOutputLogger(1)
 	}
 }
 
 func addAndCommit(file string) {
 	logger.Infof("Add file %s to dof repository", file)
 	// config add .vimrc
-	gitAdd := *gitAlias
-	gitAddArgs := []string{"add", file}
-	gitAdd.Args = append(gitAdd.Args, gitAddArgs...)
-	execCmdAndPrint(&gitAdd)
+	repo, err := git.PlainOpen(repoPath)
+	eh.IsFatalError(err)
+	wt, err := repo.Worktree()
+	eh.IsFatalError(err)
+	_, err = wt.Add(file)
+	eh.IsFatalError(err)
 
-	// config commit -m "Add vimrc"
-	gitCommit := *gitAlias
-	gitCommitArgs := []string{"commit", "-m", "Add " + file}
-	gitCommit.Args = append(gitCommit.Args, gitCommitArgs...)
-	execCmdAndPrint(&gitCommit)
+	opts := &git.CommitOptions{
+		All: true,
+	}
+	wt.Commit(fmt.Sprintf("Add %s", file), opts)
 }
