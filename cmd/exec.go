@@ -18,10 +18,11 @@ import (
 	"os/exec"
 
 	"github.com/sirupsen/logrus"
+	"github.com/steffakasid/dof/internal"
 )
 
 var (
-	traceLogger *Logger
+	traceLogger *internal.Logger
 )
 
 func execCmdAndPrint(cmd *exec.Cmd) {
@@ -39,25 +40,18 @@ func execCmdAndPrint(cmd *exec.Cmd) {
 		logger.Error(stderr.String())
 	}
 
-	doWePanic(err)
+	eh.IsFatalError(err)
 }
 
 func execCmdAndReturn(cmd *exec.Cmd) string {
 	output, err := cmd.Output()
-	logger.Info("Output:", string(output))
-	doWePanic(err)
+	eh.IsFatalError(err)
 	return string(output)
 }
 
-func doWePanic(err error) {
-	if err != nil {
-		traceLogger.Fatal(err)
-	}
-}
-
 func init() {
-	traceLogger = NewTraceLogger(logrus.DebugLevel, 2)
+	traceLogger = internal.NewTraceLogger(logrus.DebugLevel, 2)
 	if logger == nil {
-		logger = NewOutputLogger(1)
+		logger = internal.NewOutputLogger(1)
 	}
 }

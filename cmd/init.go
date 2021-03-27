@@ -20,11 +20,13 @@ import (
 	"bufio"
 	"log"
 	"os"
-	"os/exec"
 	"path"
 
+	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/config"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/steffakasid/dof/internal"
 )
 
 // initCmd represents the init command
@@ -48,14 +50,20 @@ var initCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		logger.Info("Initialize git bare repository...")
 		// git init --bare $HOME/.cfg
-		gitInit := exec.Command("git", "init", "--bare", viper.GetString("repository"))
-		execCmdAndPrint(gitInit)
+		repo, err := git.PlainInit(repoPath, true)
+		eh.IsFatalError(err)
 
+		// TODO: do we need to set the remote directly here?
 		logger.Infof("Checkout %s branch\n", viper.GetString("branch"))
-		gitCheckout := exec.Command("git", "checkout", "-B", viper.GetString("branch"))
-		execCmdAndPrint(gitCheckout)
+		branch := &config.Branch{
+			Name:   viper.GetString("branch"),
+			Remote: "origin",
+			Rebase: "true",
+		}
+		err = repo.CreateBranch(branch)
+		eh.IsFatalError(err)
 
-		doNotShowUntrackedFiles()
+		doNotShowUntrackedFiles(repo)
 
 		addGitIgnore()
 	},
@@ -64,7 +72,7 @@ var initCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(initCmd)
 	if logger == nil {
-		logger = NewOutputLogger(1)
+		logger = internal.NewOutputLogger(1)
 	}
 }
 
@@ -88,11 +96,12 @@ func addGitIgnore() {
 	addAndCommit(gitIgnore)
 }
 
-func doNotShowUntrackedFiles() {
+func doNotShowUntrackedFiles(repo *git.Repository) {
 	// alias config='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME'
 	// config config --local status.showUntrackedFiles no
-	gitConfigure := *gitAlias
-	gitConfigArgs := []string{"config", "--local", "status.showUntrackedFiles", "no"}
-	gitConfigure.Args = append(gitConfigure.Args, gitConfigArgs...)
-	execCmdAndPrint(&gitConfigure)
+	cfg, err := repo.Config()
+	eh.IsFatalError(err)
+	cfg.Raw.SetOption("status", "", "showuntrackedfiles", "no")
+	err = repo.SetConfig(cfg)
+	eh.IsFatalError(err)
 }

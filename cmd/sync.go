@@ -17,8 +17,11 @@ limitations under the License.
 */
 
 import (
+	"os"
+
+	"github.com/go-git/go-git/v5"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
+	"github.com/steffakasid/dof/internal"
 )
 
 var (
@@ -44,29 +47,37 @@ var syncCmd = &cobra.Command{
   dof sync --push-only - only add, commit and push changes to the remote repository
   dof sync --pull-only - only pull changes from the remote repository`,
 	Run: func(cmd *cobra.Command, args []string) {
-		logger.Debugf("Don't push %v", dontPush)
+		logger.Debugf("Don't push %s", dontPush)
+		repo, err := git.PlainOpen(repoPath)
+		eh.IsFatalError(err)
+		wt, err := repo.Worktree()
+		eh.IsFatalError(err)
+
 		if !dontPush {
-			gitStatus := *gitAlias
-			gitStatus.Args = append(gitStatus.Args, "status", "-s")
-			status := execCmdAndReturn(&gitStatus)
+			status, err := wt.Status()
+			eh.IsFatalError(err)
+			logger.Info(status.String())
 			logger.Debugf("Status of dof %s", status)
 			if len(status) > 0 {
 				logger.Info("Commiting changed files...")
-				gitCommit := *gitAlias
-				gitCommit.Args = append(gitCommit.Args, "commit", "-a", "-m", "Synchronized dot files")
-				execCmdAndPrint(&gitCommit)
+				opts := &git.CommitOptions{
+					All: true,
+				}
+				_, err = wt.Commit("Synchronized dot files!", opts)
+				eh.IsFatalError(err)
+
 				logger.Info("Pushing files")
-				gitPush := *gitAlias
-				gitPush.Args = append(gitPush.Args, "push", "origin", viper.GetString("branch"), "-u")
-				execCmdAndPrint(&gitPush)
+				pushOpts := &git.PushOptions{RemoteName: "origin", Progress: os.Stdout}
+				err = repo.Push(pushOpts)
+				eh.IsFatalError(err)
 			}
 		}
 		logger.Debugf("Don't pull %v", dontPull)
 		if !dontPull {
 			logger.Info("Pulling changes from repo...")
-			gitPull := *gitAlias
-			gitPull.Args = append(gitPull.Args, "pull", "--rebase")
-			execCmdAndPrint(&gitPull)
+			pullOpts := &git.PullOptions{RemoteName: "origin", Progress: os.Stdout}
+			err := wt.Pull(pullOpts)
+			eh.IsFatalError(err)
 		}
 	},
 }
@@ -76,6 +87,6 @@ func init() {
 	syncCmd.Flags().BoolVarP(&dontPull, "push-only", "P", false, "Only push changes to remote repository.")
 	syncCmd.Flags().BoolVarP(&dontPush, "pull-only", "p", false, "Only pull changes from remote repository.")
 	if logger == nil {
-		logger = NewOutputLogger(1)
+		logger = internal.NewOutputLogger(1)
 	}
 }
