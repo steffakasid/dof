@@ -72,11 +72,11 @@ go-build-all:
 	@GOOS=darwin  GOARCH=amd64 GOPATH=$(GOPATH) GOBIN=$(GOBIN) go build \
 			-tags release \
 			-ldflags '-X github.com/steffakasid/dof/cmd.version=$(VERSION)' \
-			-o $(GOBIN)/main-freebsd-386 $(GOFILES)
+			-o $(GOBIN)/main-freebsd-386/$(PROJECTNAME) $(GOFILES)
 	@GOOS=linux GOARCH=amd64 GOPATH=$(GOPATH) GOBIN=$(GOBIN) go build \
 			-tags release \
 			-ldflags '-X github.com/steffakasid/dof/cmd.version=$(VERSION)' \
-			-o $(GOBIN)/main-linux-386 $(GOFILES)
+			-o $(GOBIN)/main-linux-386/$(PROJECTNAME) $(GOFILES)
 
 go-generate:
 	@echo "  >  Generating dependency files..."
@@ -87,10 +87,10 @@ go-get:
 	@GOPATH=$(GOPATH) GOBIN=$(GOBIN) go get $(get)
 
 go-install:
-	@GOPATH=$(GOPATH) GOBIN=$(GOBIN) go install \
+	@GOPATH=$(GOPATH) GOBIN=$(GOBIN) go build \
 			-tags release \
 			-ldflags '-X github.com/steffakasid/dof/cmd.version=$(VERSION)' \
-			$(GOFILES)
+			-o $(GOBIN)/$(PROJECTNAME) $(GOFILES)
 
 go-clean:
 	@echo "  >  Cleaning build cache"

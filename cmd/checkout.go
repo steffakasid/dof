@@ -22,6 +22,7 @@ import (
 	"path"
 	"strings"
 
+	"github.com/go-git/go-git/v5"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -44,16 +45,28 @@ var checkoutCmd = &cobra.Command{
   Examples:
   dof checkout git@github.com:steffakasid/my-dot-files.git`,
 	Run: func(cmd *cobra.Command, args []string) {
-		gitClone := exec.Command("git", "clone", "--bare", args[0], repoPath)
-		execCmdAndPrint(gitClone)
+		opts := git.CloneOptions{
+			URL: args[0],
+			// TODO: we might add auth-method here for private repos
+			Progress: os.Stdout,
+		}
+		repo, err := git.PlainClone(repoPath, true, &opts)
+		eh.IsFatalError(err)
 
-		doNotShowUntrackedFiles()
+		doNotShowUntrackedFiles(repo)
 
 		renameOldFiles()
 
-		gitCheckout := *gitAlias
-		gitCheckout.Args = append(gitCheckout.Args, "checkout", viper.GetString("branch"))
-		execCmdAndPrint(&gitCheckout)
+		wt, err := repo.Worktree()
+		eh.IsFatalError(err)
+
+		branch, err := repo.Branch(viper.GetString("branch"))
+
+		coOpts := &git.CheckoutOptions{
+			Branch: branch.Merge,
+			Keep:   true,
+		}
+		wt.Checkout(coOpts)
 	},
 }
 
@@ -63,7 +76,7 @@ func init() {
 
 func renameOldFiles() {
 	err := os.Chdir(repoPath)
-	doWePanic(err)
+	eh.IsFatalError(err)
 	lsCmd := exec.Command("git", "ls-tree", "--name-only", viper.GetString("branch"))
 	filesString := execCmdAndReturn(lsCmd)
 	files := strings.Split(filesString, "\n")
