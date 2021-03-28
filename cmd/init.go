@@ -17,15 +17,7 @@ limitations under the License.
 */
 
 import (
-	"bufio"
-	"log"
-	"os"
-	"path"
-
-	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/config"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"github.com/steffakasid/dof/internal"
 )
 
@@ -49,23 +41,7 @@ var initCmd = &cobra.Command{
   dot sync --push-only`,
 	Run: func(cmd *cobra.Command, args []string) {
 		logger.Info("Initialize git bare repository...")
-		// git init --bare $HOME/.cfg
-		repo, err := git.PlainInit(repoPath, true)
-		eh.IsFatalError(err)
 
-		// TODO: do we need to set the remote directly here?
-		logger.Infof("Checkout %s branch\n", viper.GetString("branch"))
-		branch := &config.Branch{
-			Name:   viper.GetString("branch"),
-			Remote: "origin",
-			Rebase: "true",
-		}
-		err = repo.CreateBranch(branch)
-		eh.IsFatalError(err)
-
-		doNotShowUntrackedFiles(repo)
-
-		addGitIgnore()
 	},
 }
 
@@ -74,34 +50,4 @@ func init() {
 	if logger == nil {
 		logger = internal.NewOutputLogger(1)
 	}
-}
-
-func addGitIgnore() {
-	gitIgnore := path.Join(workDir, ".gitignore")
-	file, err := os.Create(gitIgnore)
-	if err != nil {
-		log.Fatal(err)
-	}
-	writer := bufio.NewWriter(file)
-
-	linesToWrite := []string{repoPathName}
-	for _, line := range linesToWrite {
-		_, err := writer.WriteString(line + "\n")
-		if err != nil {
-			log.Fatalf("Got error while writing to a file. Err: %s", err.Error())
-		}
-	}
-	writer.Flush()
-
-	addAndCommit(gitIgnore)
-}
-
-func doNotShowUntrackedFiles(repo *git.Repository) {
-	// alias config='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME'
-	// config config --local status.showUntrackedFiles no
-	cfg, err := repo.Config()
-	eh.IsFatalError(err)
-	cfg.Raw.SetOption("status", "", "showuntrackedfiles", "no")
-	err = repo.SetConfig(cfg)
-	eh.IsFatalError(err)
 }

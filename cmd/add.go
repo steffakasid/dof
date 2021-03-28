@@ -17,9 +17,6 @@ limitations under the License.
 */
 
 import (
-	"fmt"
-
-	"github.com/go-git/go-git/v5"
 	"github.com/spf13/cobra"
 	"github.com/steffakasid/dof/internal"
 )
@@ -38,7 +35,13 @@ var addCmd = &cobra.Command{
   Examples:
   dof add .zshrc - add .zshrc to dot file repository`,
 	Run: func(cmd *cobra.Command, args []string) {
-		addAndCommit(args[0])
+		logger.Infof("Add file %s to dof repository", args[0])
+		// config add .vimrc
+		bareRepo, err := internal.OpenDofRepo(workDir, repoFolderName)
+		eh.IsFatalError(err)
+
+		err = bareRepo.AddFile(args[0])
+		eh.IsFatalError(err)
 	},
 }
 
@@ -47,20 +50,4 @@ func init() {
 	if logger == nil {
 		logger = internal.NewOutputLogger(1)
 	}
-}
-
-func addAndCommit(file string) {
-	logger.Infof("Add file %s to dof repository", file)
-	// config add .vimrc
-	repo, err := git.PlainOpen(repoPath)
-	eh.IsFatalError(err)
-	wt, err := repo.Worktree()
-	eh.IsFatalError(err)
-	_, err = wt.Add(file)
-	eh.IsFatalError(err)
-
-	opts := &git.CommitOptions{
-		All: true,
-	}
-	wt.Commit(fmt.Sprintf("Add %s", file), opts)
 }

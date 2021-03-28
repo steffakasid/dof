@@ -17,10 +17,6 @@ limitations under the License.
 */
 
 import (
-	"github.com/go-git/go-billy/v5/osfs"
-	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/plumbing/cache"
-	"github.com/go-git/go-git/v5/storage/filesystem"
 	"github.com/spf13/cobra"
 	"github.com/steffakasid/dof/internal"
 )
@@ -36,18 +32,13 @@ var statusCmd = &cobra.Command{
 
 func status(cmd *cobra.Command, args []string) {
 	logger.Info("Status of dof repository...")
-	traceLogger.Debug("repoPath:", repoPath)
+	traceLogger.Debug("repoPath:", repoFolderName)
 	traceLogger.Debug("workDir:", workDir)
 
-	wt := osfs.New(workDir)
-	dot, err := wt.Chroot(repoPathName)
-	eh.IsFatalError(err)
-	traceLogger.Debug(dot.Root())
-	s := filesystem.NewStorage(dot, cache.NewObjectLRUDefault())
-	repo, err := git.Open(s, wt)
+	dofRepo, err := internal.OpenDofRepo(workDir, repoFolderName)
 	eh.IsFatalError(err)
 
-	worktree, err := repo.Worktree()
+	worktree, err := dofRepo.Worktree()
 	eh.IsFatalError(err)
 	status, err := worktree.Status()
 	eh.IsFatalError(err)

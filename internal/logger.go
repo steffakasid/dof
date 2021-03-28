@@ -48,7 +48,7 @@ func (l *Logger) Info(arg ...interface{}) {
 }
 
 func (l *Logger) Infof(format string, arg ...interface{}) {
-	l.WithFields(l.generateFields()).Infof(format, arg)
+	l.WithFields(l.generateFields()).Infof(format, arg...)
 }
 
 func (l *Logger) Error(arg ...interface{}) {
