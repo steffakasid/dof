@@ -48,13 +48,17 @@ $ dof completion fish > ~/.config/fish/completions/dof.fish
 	Run: func(cmd *cobra.Command, args []string) {
 		switch args[0] {
 		case "bash":
-			cmd.Root().GenBashCompletion(os.Stdout)
+			err := cmd.Root().GenBashCompletion(os.Stdout)
+			eh.IsError(err)
 		case "zsh":
-			cmd.Root().GenZshCompletion(os.Stdout)
+			err := cmd.Root().GenZshCompletion(os.Stdout)
+			eh.IsError(err)
 		case "fish":
-			cmd.Root().GenFishCompletion(os.Stdout, true)
+			err := cmd.Root().GenFishCompletion(os.Stdout, true)
+			eh.IsError(err)
 		case "powershell":
-			cmd.Root().GenPowerShellCompletion(os.Stdout)
+			err := cmd.Root().GenPowerShellCompletion(os.Stdout)
+			eh.IsError(err)
 		}
 	},
 }

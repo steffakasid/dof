@@ -21,6 +21,7 @@ import (
 	"path"
 	"path/filepath"
 
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/steffakasid/dof/internal"
 
@@ -31,8 +32,9 @@ var cfgFile string
 var version = "not set"
 
 var rootCmd = &cobra.Command{
-	Use:   "dof",
-	Short: "dof - <do>t <f>ile repository tool",
+	Use:     "dof",
+	Short:   "dof - <do>t <f>ile repository tool",
+	Version: version,
 	Long: `This tool is indended to setup and use a dot file repository. Basically the idea came
   when reading https://www.atlassian.com/git/tutorials/dotfiles. But finally I didn't like the
   way to do it with aliases (which must exist and be defined in a dotfile e.g. zshrc. Therefore
@@ -42,11 +44,12 @@ var rootCmd = &cobra.Command{
 }
 
 var (
-	userHomeDir  string
-	workDir      string
-	repoPathName string
-	logger       *internal.Logger
-	eh           *internal.ErrorHandler
+	userHomeDir    string
+	workDir        string
+	repoFolderName string
+	logger         *internal.Logger
+	traceLogger    *internal.Logger
+	eh             *internal.ErrorHandler
 )
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -63,6 +66,7 @@ func Execute() {
 
 func init() {
 	var err error
+	traceLogger = internal.NewTraceLogger(logrus.DebugLevel, 2)
 	if logger == nil {
 		logger = internal.NewOutputLogger(1)
 	}
@@ -82,7 +86,7 @@ func initFlags() {
 	eh.IsFatalError(viper.BindPFlag("repository", rootCmd.PersistentFlags().Lookup("repository")))
 	eh.IsFatalError(os.MkdirAll(viper.GetString("repository"), 0700))
 
-	workDir, repoPathName = filepath.Split(viper.GetString("repository"))
+	workDir, repoFolderName = filepath.Split(viper.GetString("repository"))
 
 	viper.SetDefault("branch", "main")
 	logger.Debugln("branch:", viper.GetString("branch"))
@@ -105,7 +109,6 @@ func initConfig() {
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
 		logger.Infof("Using config file: %s", viper.ConfigFileUsed())
-		repoPath = viper.GetString("repository")
 	} else {
 		logger.Error(err)
 		err := viper.SafeWriteConfig()
