@@ -17,14 +17,9 @@ limitations under the License.
 */
 
 import (
-	"os"
-	"os/exec"
-	"path"
-	"strings"
-
-	"github.com/go-git/go-git/v5"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/steffakasid/dof/internal"
 )
 
 // checkoutCmd represents the checkout command
@@ -45,13 +40,9 @@ var checkoutCmd = &cobra.Command{
   Examples:
   dof checkout git@github.com:steffakasid/my-dot-files.git`,
 	Run: func(cmd *cobra.Command, args []string) {
-		opts := git.CloneOptions{
-			URL: args[0],
-			// TODO: we might add auth-method here for private repos
-			Progress: os.Stdout,
-		}
-		repo, err := git.PlainClone(repoPath, true, &opts)
+		_, err := internal.CheckoutDofRepo(workDir, repoFolderName, args[0], viper.GetString("branch"))
 		eh.IsFatalError(err)
+<<<<<<< HEAD
 
 		doNotShowUntrackedFiles(repo)
 
@@ -68,21 +59,11 @@ var checkoutCmd = &cobra.Command{
 			Keep:   true,
 		}
 		wt.Checkout(coOpts)
+=======
+>>>>>>> 1e3961e (Refactoring)
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(checkoutCmd)
-}
-
-func renameOldFiles() {
-	err := os.Chdir(repoPath)
-	eh.IsFatalError(err)
-	lsCmd := exec.Command("git", "ls-tree", "--name-only", viper.GetString("branch"))
-	filesString := execCmdAndReturn(lsCmd)
-	files := strings.Split(filesString, "\n")
-	for _, file := range files {
-		logger.Infof("Rename %s to %s", path.Join(workDir, file), path.Join(workDir, file+"_before_dof"))
-		os.Rename(path.Join(workDir, file), path.Join(workDir, file+"_before_dof"))
-	}
 }

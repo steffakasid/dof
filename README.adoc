@@ -10,6 +10,7 @@ This little tool can be used to manage dot file based on a git bare repository. 
 ## todo
 
 * make it easier to intialize a new repo e.g. use an argument to directly set the remote
+* finally implement go-git (generally it works but the worktree status doesn't work as expected therefore not merge until now)
 
 ## how to use
 

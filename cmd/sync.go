@@ -47,17 +47,18 @@ var syncCmd = &cobra.Command{
   dof sync --push-only - only add, commit and push changes to the remote repository
   dof sync --pull-only - only pull changes from the remote repository`,
 	Run: func(cmd *cobra.Command, args []string) {
-		logger.Debugf("Don't push %s", dontPush)
-		repo, err := git.PlainOpen(repoPath)
+		logger.Debugf("Don't push %t", dontPush)
+		dofRepo, err := internal.OpenDofRepo(workDir, repoFolderName)
 		eh.IsFatalError(err)
-		wt, err := repo.Worktree()
+		wt, err := dofRepo.Worktree()
 		eh.IsFatalError(err)
 
 		if !dontPush {
-			status, err := wt.Status()
-			eh.IsFatalError(err)
-			logger.Info(status.String())
-			logger.Debugf("Status of dof %s", status)
+			// TODO: reenable if we got status working...
+			// status, err := dofRepo.Status()
+			//eh.IsFatalError(err)
+			//logger.Info(status.String())
+			status := "test" // TODO: Delete if status works
 			if len(status) > 0 {
 				logger.Info("Commiting changed files...")
 				opts := &git.CommitOptions{
@@ -68,11 +69,11 @@ var syncCmd = &cobra.Command{
 
 				logger.Info("Pushing files")
 				pushOpts := &git.PushOptions{RemoteName: "origin", Progress: os.Stdout}
-				err = repo.Push(pushOpts)
+				err = dofRepo.Push(pushOpts)
 				eh.IsFatalError(err)
 			}
 		}
-		logger.Debugf("Don't pull %v", dontPull)
+		logger.Debugf("Don't pull %t", dontPull)
 		if !dontPull {
 			logger.Info("Pulling changes from repo...")
 			pullOpts := &git.PullOptions{RemoteName: "origin", Progress: os.Stdout}
