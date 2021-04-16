@@ -19,6 +19,10 @@ import (
 
 var traceLogger *Logger
 
+func init() {
+	traceLogger = NewTraceLogger(5, 1)
+}
+
 type dofRepo struct {
 	workDirPath    string
 	repoFolderPath string
@@ -26,8 +30,7 @@ type dofRepo struct {
 }
 
 func OpenDofRepo(workDir, repoFolder string) (*dofRepo, error) {
-	traceLogger = NewTraceLogger(logrus.DebugLevel, 1)
-
+	traceLogger.SetLevel(logrus.Level(viper.GetInt("LogLevel")))
 	wt := osfs.New(workDir)
 	dot, err := wt.Chroot(repoFolder)
 	if err != nil {
