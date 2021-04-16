@@ -117,7 +117,7 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err == nil {
 		traceLogger.SetLevel(logrus.Level(viper.GetInt("LogLevel")))
 
-		logger.Infof("Using config file: %s", viper.ConfigFileUsed())
+		traceLogger.Debugf("Using config file: %s", viper.ConfigFileUsed())
 	} else {
 		eh.IsError(err)
 		err := viper.SafeWriteConfig()
