@@ -31,7 +31,7 @@ var statusCmd = &cobra.Command{
 }
 
 func status(cmd *cobra.Command, args []string) {
-	logger.Info("Status of dof repository...")
+	logger.Info("Status of dof repository:")
 	traceLogger.Debug("repoPath:", repoFolderName)
 	traceLogger.Debug("workDir:", workDir)
 
@@ -40,7 +40,12 @@ func status(cmd *cobra.Command, args []string) {
 
 	out, err := dofRepo.Status()
 	eh.IsFatalError(err)
-	logger.Info(string(out))
+	if len(out) > 0 {
+		logger.Info(string(out))
+	} else {
+		logger.Info("No files changed!")
+	}
+
 }
 
 func init() {
