@@ -54,11 +54,9 @@ var syncCmd = &cobra.Command{
 		eh.IsFatalError(err)
 
 		if !dontPush {
-			// TODO: reenable if we got status working...
-			// status, err := dofRepo.Status()
-			//eh.IsFatalError(err)
-			//logger.Info(status.String())
-			status := "test" // TODO: Delete if status works
+
+			status, err := dofRepo.Status()
+			eh.IsFatalError(err)
 			if len(status) > 0 {
 				logger.Info("Commiting changed files...")
 				opts := &git.CommitOptions{
@@ -78,7 +76,7 @@ var syncCmd = &cobra.Command{
 			logger.Info("Pulling changes from repo...")
 			pullOpts := &git.PullOptions{RemoteName: "origin", Progress: os.Stdout}
 			err := wt.Pull(pullOpts)
-			eh.IsFatalError(err)
+			eh.IsError(err)
 		}
 	},
 }

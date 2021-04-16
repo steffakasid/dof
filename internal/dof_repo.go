@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"path"
 
 	"github.com/go-git/go-billy/v5/osfs"
@@ -139,6 +140,12 @@ func (dof *dofRepo) AddFile(file string) error {
 	}
 	_, err = wt.Commit(fmt.Sprintf("Add %s", file), opts)
 	return err
+}
+
+func (dof *dofRepo) Status() ([]byte, error) {
+	status := exec.Command("git", fmt.Sprintf("--git-dir=%s", dof.repoFolderPath), fmt.Sprintf("--work-tree=%s", dof.workDirPath), "status", "-s")
+
+	return status.Output()
 }
 
 func (dof *dofRepo) addGitIgnore() error {

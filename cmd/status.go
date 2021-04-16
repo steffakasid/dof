@@ -38,14 +38,10 @@ func status(cmd *cobra.Command, args []string) {
 	dofRepo, err := internal.OpenDofRepo(workDir, repoFolderName)
 	eh.IsFatalError(err)
 
-	worktree, err := dofRepo.Worktree()
+	out, err := dofRepo.Status()
 	eh.IsFatalError(err)
-	status, err := worktree.Status()
-	eh.IsFatalError(err)
-
-	for key, value := range status {
-		logger.Info(key, value)
-	}
+	logger.Info("Status of dof repo:")
+	logger.Info(string(out))
 }
 
 func init() {
