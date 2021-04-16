@@ -40,7 +40,6 @@ func status(cmd *cobra.Command, args []string) {
 
 	out, err := dofRepo.Status()
 	eh.IsFatalError(err)
-	logger.Info("Status of dof repo:")
 	logger.Info(string(out))
 }
 
