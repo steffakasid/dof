@@ -48,7 +48,7 @@ var initCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		logger.Info("Initialize git bare repository...")
 		// git init --bare $HOME/.cfg
-		gitInit := exec.Command("git", "init", "--bare", repoPath)
+		gitInit := exec.Command("git", "init", "--bare", viper.GetString("repository"))
 		execCmdAndPrint(gitInit)
 
 		logger.Infof("Checkout %s branch\n", viper.GetString("branch"))

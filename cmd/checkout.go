@@ -44,13 +44,17 @@ var checkoutCmd = &cobra.Command{
   Examples:
   dof checkout git@github.com:steffakasid/my-dot-files.git`,
 	Run: func(cmd *cobra.Command, args []string) {
-		gitClone := exec.Command("git", "clone", "--bare", args[0], repoPath)
+		logger.Info("Cloning bare repo...")
+		gitClone := exec.Command("git", "clone", "--bare", args[0], viper.GetString("repository"))
 		execCmdAndPrint(gitClone)
 
+		logger.Info(("Configure to not show untracked fiels..."))
 		doNotShowUntrackedFiles()
 
+		logger.Info("Rename old files as backup...")
 		renameOldFiles()
 
+		logger.Info("Checkout branch...")
 		gitCheckout := *gitAlias
 		gitCheckout.Args = append(gitCheckout.Args, "checkout", viper.GetString("branch"))
 		execCmdAndPrint(&gitCheckout)
@@ -62,12 +66,13 @@ func init() {
 }
 
 func renameOldFiles() {
-	err := os.Chdir(repoPath)
+	err := os.Chdir(workDir)
 	doWePanic(err)
 	lsCmd := exec.Command("git", "ls-tree", "--name-only", viper.GetString("branch"))
 	filesString := execCmdAndReturn(lsCmd)
 	files := strings.Split(filesString, "\n")
 	for _, file := range files {
+		logger.Infof("Rename %s to %s", path.Join(workDir, file), path.Join(workDir, file+"_before_dof"))
 		os.Rename(path.Join(workDir, file), path.Join(workDir, file+"_before_dof"))
 	}
 }

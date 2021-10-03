@@ -43,7 +43,6 @@ var rootCmd = &cobra.Command{
 
 var (
 	userHomeDir  string
-	repoPath     string
 	workDir      string
 	repoPathName string
 	gitAlias     *exec.Cmd
