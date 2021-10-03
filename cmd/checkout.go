@@ -68,8 +68,13 @@ func init() {
 func renameOldFiles() {
 	err := os.Chdir(workDir)
 	doWePanic(err)
-	lsCmd := exec.Command("git", "ls-tree", "--name-only", viper.GetString("branch"))
-	filesString := execCmdAndReturn(lsCmd)
+
+	gitTree := *gitAlias
+
+	gitTreeArgs := []string{"ls-tree", "--name-only", viper.GetString("branch")}
+	gitTree.Args = append(gitTree.Args, gitTreeArgs...)
+
+	filesString := execCmdAndReturn(&gitTree)
 	files := strings.Split(filesString, "\n")
 	for _, file := range files {
 		logger.Infof("Rename %s to %s", path.Join(workDir, file), path.Join(workDir, file+"_before_dof"))
