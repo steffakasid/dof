@@ -115,7 +115,7 @@ func initConfig() {
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
-		traceLogger.SetLevel(logrus.Level(viper.GetInt("LogLevel")))
+		traceLogger.SetLevel(viper.GetString("LogLevel"))
 
 		traceLogger.Debugf("Using config file: %s", viper.ConfigFileUsed())
 	} else {
