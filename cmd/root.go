@@ -63,11 +63,6 @@ func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		logger.Fatal(err)
 	}
-	if viper.ConfigFileUsed() != "" {
-		if err := viper.WriteConfig(); err != nil {
-			logger.Fatal(err)
-		}
-	}
 }
 
 func init() {
@@ -120,9 +115,6 @@ func initConfig() {
 		traceLogger.Debugf("Using config file: %s", viper.ConfigFileUsed())
 	} else {
 		eh.IsError(err)
-		err := viper.SafeWriteConfig()
-		if err != nil {
-			eh.IsFatalError(err)
-		}
+	}
 	}
 }
