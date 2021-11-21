@@ -35,6 +35,14 @@ func (l *Logger) generateFields() log.Fields {
 	return log.Fields{}
 }
 
+func (l *Logger) SetLevel(level string) {
+	lvl, err := log.ParseLevel(level)
+	if err != nil {
+		panic(err)
+	}
+	l.Logger.SetLevel(lvl)
+}
+
 func (l *Logger) Debug(arg ...interface{}) {
 	l.WithFields(l.generateFields()).Debug(arg...)
 }
