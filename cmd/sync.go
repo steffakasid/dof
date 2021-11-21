@@ -47,7 +47,8 @@ var syncCmd = &cobra.Command{
   dof sync --push-only - only add, commit and push changes to the remote repository
   dof sync --pull-only - only pull changes from the remote repository`,
 	Run: func(cmd *cobra.Command, args []string) {
-		logger.Debugf("Don't push %t", dontPush)
+		traceLogger.Debugf("Don't push %t", dontPush)
+		traceLogger.Debugf("Open dof repo workdir %s repoFolderName %s", workDir, repoFolderName)
 		dofRepo, err := internal.OpenDofRepo(workDir, repoFolderName)
 		eh.IsFatalError(err)
 		wt, err := dofRepo.Worktree()
@@ -58,10 +59,9 @@ var syncCmd = &cobra.Command{
 			status, err := dofRepo.Status()
 			eh.IsFatalError(err)
 			if len(status) > 0 {
+
 				logger.Info("Commiting changed files...")
-				opts := &git.CommitOptions{
-					All: true,
-				}
+				opts := &git.CommitOptions{}
 				_, err = wt.Commit("Synchronized dot files!", opts)
 				eh.IsFatalError(err)
 
@@ -71,11 +71,12 @@ var syncCmd = &cobra.Command{
 				eh.IsFatalError(err)
 			}
 		}
-		logger.Debugf("Don't pull %t", dontPull)
+		traceLogger.Debugf("Don't pull %t", dontPull)
 		if !dontPull {
 			logger.Info("Pulling changes from repo...")
+
 			pullOpts := &git.PullOptions{RemoteName: "origin", Progress: os.Stdout}
-			err := wt.Pull(pullOpts)
+			err = wt.Pull(pullOpts)
 			eh.IsError(err)
 		}
 	},
