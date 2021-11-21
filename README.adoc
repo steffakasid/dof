@@ -22,6 +22,10 @@ If you want to initialize a new repo you could just run `dof init`. This will ba
 
 If you want to checkout an existing repository you can just run `dof checkout <git-remote-repo>`. This command will checkout the repository as a bare repo. Afterwards it will identify all included dot files, rename them and run a checkout on the bare repo. Afterwards you will have your dotfiles setup in your home directory from the dot file repo.
 
+### Add ssh keys to your known_hosts file
+
+Just run e.g. `ssh-keyscan github.com >> known_hosts`
+
 ## github actions
 
 This repo uses https://github.com/marketplace/actions/go-release-binaries to build go binaries
