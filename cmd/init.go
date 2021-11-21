@@ -35,10 +35,10 @@ var initCmd = &cobra.Command{
   4. add .gitignore to <work-dir> to ignore <repo-path>
 
   Example Usage:
-  dot init
-  dot alias remote add origin <git-repo-url>
-  dot add .zshrc
-  dot sync --push-only`,
+  dof init
+  dof alias remote add origin <git-repo-url>
+  dof add .zshrc
+  dof sync --push-only`,
 	Run: func(cmd *cobra.Command, args []string) {
 		logger.Info("Initialize git bare repository...")
 
