@@ -11,6 +11,7 @@ import (
 	"github.com/go-git/go-billy/v5/osfs"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/config"
+	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/cache"
 	"github.com/go-git/go-git/v5/storage/filesystem"
 	"github.com/sirupsen/logrus"
@@ -53,12 +54,28 @@ func OpenDofRepo(workDir, repoFolder string) (*dofRepo, error) {
 
 func CheckoutDofRepo(workDir, repoFolder, repoUrl, branch string) (*dofRepo, error) {
 	traceLogger.Debugf("CheckoutDofRepo workDir %s, repoFolder %s, repoUrl %s, branch %s", workDir, repoFolder, repoUrl, branch)
+	worktree := osfs.New(workDir)
+	dot, err := worktree.Chroot(repoFolder)
+	if err != nil {
+		return nil, err
+	}
+
+	traceLogger.Debug("dot.Root()", dot.Root())
+
+	opts := &git.CloneOptions{
+		URL:      repoUrl,
+		Progress: os.Stdout,
+	}
+
+	_, err = git.PlainClone(path.Join(workDir, repoFolder), true, opts)
 	if err != nil {
 		traceLogger.Error(err)
 		return nil, err
 	}
-	traceLogger.Debug("dot.Root()", dot.Root())
+
+	dofRepo, err := OpenDofRepo(workDir, repoFolder)
 	if err != nil {
+		traceLogger.Error(err)
 		return nil, err
 	}
 
@@ -68,22 +85,20 @@ func CheckoutDofRepo(workDir, repoFolder, repoUrl, branch string) (*dofRepo, err
 
 	wt, err := dofRepo.Worktree()
 	if err != nil {
+		traceLogger.Error(err)
 		return nil, err
 	}
 
-	br, err := dofRepo.Branch(viper.GetString("branch"))
-	if err != nil {
-		return nil, err
-	}
-
-	coOpts := &git.CheckoutOptions{
-		Branch: br.Merge,
+	checkoutOpts := &git.CheckoutOptions{
+		Branch: plumbing.NewBranchReferenceName("main"),
 		Keep:   true,
 	}
-	err = wt.Checkout(coOpts)
+	err = wt.Checkout(checkoutOpts)
 	if err != nil {
+		traceLogger.Error(err)
 		return nil, err
 	}
+
 	return dofRepo, nil
 }
 
@@ -188,12 +203,31 @@ func (dof *dofRepo) renameOldFiles() {
 		panic(err)
 	}
 
-	// TODO: change to go-git
-	// dof.Objects()
-	// lsCmd := exec.Command("git", "ls-tree", "--name-only", viper.GetString("branch"))
-	// filesString := execCmdAndReturn(lsCmd)
-	// files := strings.Split(filesString, "\n")
-	// for _, file := range files {
-	// 	os.Rename(path.Join(dof.workDirPath, file), path.Join(dof.workDirPath, file+"_before_dof"))
-	// }
+	rev := plumbing.Revision("HEAD")
+	hash, err := dof.ResolveRevision(rev)
+	if err != nil {
+		panic(err)
+	}
+
+	commit, err := dof.CommitObject(*hash)
+	if err != nil {
+		panic(err)
+	}
+
+	tree, err := commit.Tree()
+	if err != nil {
+		panic(err)
+	}
+
+	for _, entry := range tree.Entries {
+		file := path.Join(dof.workDirPath, entry.Name)
+		newName := path.Join(dof.workDirPath, entry.Name+"_before_dof")
+		if _, err := os.Stat(file); err == nil {
+			traceLogger.Debugf("Rename oldfile %s to newname %s.", entry.Name, newName)
+			err := os.Rename(file, newName)
+			if err != nil {
+				traceLogger.Error(err)
+			}
+		}
+	}
 }
