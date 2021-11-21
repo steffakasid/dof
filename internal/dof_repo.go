@@ -31,13 +31,14 @@ type dofRepo struct {
 
 func OpenDofRepo(workDir, repoFolder string) (*dofRepo, error) {
 	traceLogger.SetLevel(viper.GetString("LogLevel"))
+	traceLogger.Debugf("Open dof repo workDir %s repoFolder %s", workDir, repoFolder)
 	wt := osfs.New(workDir)
 	dot, err := wt.Chroot(repoFolder)
 	if err != nil {
 		return nil, err
 	}
 
-	traceLogger.Debug(dot.Root())
+	traceLogger.Debug("dot.Root()", dot.Root())
 	s := filesystem.NewStorage(dot, cache.NewObjectLRUDefault())
 	repo, err := git.Open(s, wt)
 	if err != nil {
@@ -51,17 +52,12 @@ func OpenDofRepo(workDir, repoFolder string) (*dofRepo, error) {
 }
 
 func CheckoutDofRepo(workDir, repoFolder, repoUrl, branch string) (*dofRepo, error) {
-	opts := git.CloneOptions{
-		URL: repoUrl,
-		// TODO: we might add auth-method here for private repos
-		Progress: os.Stdout,
-	}
-	_, err := git.PlainClone(path.Join(workDir, repoFolder), true, &opts)
+	traceLogger.Debugf("CheckoutDofRepo workDir %s, repoFolder %s, repoUrl %s, branch %s", workDir, repoFolder, repoUrl, branch)
 	if err != nil {
 		traceLogger.Error(err)
 		return nil, err
 	}
-	dofRepo, err := OpenDofRepo(workDir, repoFolder)
+	traceLogger.Debug("dot.Root()", dot.Root())
 	if err != nil {
 		return nil, err
 	}
@@ -93,6 +89,7 @@ func CheckoutDofRepo(workDir, repoFolder, repoUrl, branch string) (*dofRepo, err
 
 func InitNewDofRepo(workDir, repoFolder, branch string) (*dofRepo, error) {
 	// git init --bare $HOME/.cfg
+	traceLogger.Debugf("Checkout using workdir %s repoFolder %s", workDir, repoFolder)
 	_, err := git.PlainInit(path.Join(workDir, repoFolder), true)
 	if err != nil {
 		return nil, err
