@@ -67,7 +67,7 @@ func Execute() {
 
 func init() {
 	var err error
-	viper.SetDefault("LogLevel", 4)
+	viper.SetDefault("LogLevel", logrus.InfoLevel)
 	traceLogger = internal.NewTraceLogger(logrus.Level(viper.GetInt("LogLevel")), 2)
 
 	if logger == nil {
@@ -87,8 +87,6 @@ func init() {
 	rootCmd.PersistentFlags().StringP("repository", "r", viper.GetString("repository"), "Repository folder to create a bare repository inside")
 	eh.IsFatalError(viper.BindPFlag("repository", rootCmd.PersistentFlags().Lookup("repository")))
 	eh.IsFatalError(os.MkdirAll(viper.GetString("repository"), 0700))
-
-	workDir, repoFolderName = filepath.Split(viper.GetString("repository"))
 
 	viper.SetDefault("branch", "main")
 	traceLogger.Debugln("branch:", viper.GetString("branch"))
@@ -116,5 +114,5 @@ func initConfig() {
 	} else {
 		eh.IsError(err)
 	}
-	}
+	workDir, repoFolderName = filepath.Split(viper.GetString("repository"))
 }
