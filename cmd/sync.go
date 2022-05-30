@@ -44,7 +44,7 @@ var syncCmd = &cobra.Command{
   dof sync --push-only - only add, commit and push changes to the remote repository
   dof sync --pull-only - only pull changes from the remote repository`,
 	Run: func(cmd *cobra.Command, args []string) {
-		logger.Debugf("Don't push %s", dontPush)
+		logger.Debugf("Don't push %v", dontPush)
 		if !dontPush {
 			gitStatus := *gitAlias
 			gitStatus.Args = append(gitStatus.Args, "status", "-s")
@@ -61,7 +61,7 @@ var syncCmd = &cobra.Command{
 				execCmdAndPrint(&gitPush)
 			}
 		}
-		logger.Debugf("Don't pull %s", dontPull)
+		logger.Debugf("Don't pull %v", dontPull)
 		if !dontPull {
 			logger.Info("Pulling changes from repo...")
 			gitPull := *gitAlias
