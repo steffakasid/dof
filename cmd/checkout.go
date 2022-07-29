@@ -42,25 +42,6 @@ var checkoutCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		_, err := internal.CheckoutDofRepo(workDir, repoFolderName, args[0], viper.GetString("branch"))
 		eh.IsFatalError(err)
-<<<<<<< HEAD
-
-		doNotShowUntrackedFiles(repo)
-
-		logger.Info("Rename old files as backup...")
-		renameOldFiles()
-
-		wt, err := repo.Worktree()
-		eh.IsFatalError(err)
-
-		branch, err := repo.Branch(viper.GetString("branch"))
-
-		coOpts := &git.CheckoutOptions{
-			Branch: branch.Merge,
-			Keep:   true,
-		}
-		wt.Checkout(coOpts)
-=======
->>>>>>> 1e3961e (Refactoring)
 	},
 }
 
