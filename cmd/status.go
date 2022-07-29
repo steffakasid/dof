@@ -32,7 +32,7 @@ var statusCmd = &cobra.Command{
 
 func status(cmd *cobra.Command, args []string) {
 	logger.Info("Status of dof repository:")
-	traceLogger.Debug("repoPath:", repoFolderName)
+	traceLogger.Debug("repoPath: ", repoFolderName)
 	traceLogger.Debug("workDir:", workDir)
 
 	dofRepo, err := internal.OpenDofRepo(workDir, repoFolderName)

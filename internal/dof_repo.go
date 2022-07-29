@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/exec"
 	"path"
 
 	"github.com/go-git/go-billy/v5/osfs"
@@ -39,7 +38,7 @@ func OpenDofRepo(workDir, repoFolder string) (*dofRepo, error) {
 		return nil, err
 	}
 
-	traceLogger.Debug("dot.Root()", dot.Root())
+	traceLogger.Debug("dot.Root() ", dot.Root())
 	s := filesystem.NewStorage(dot, cache.NewObjectLRUDefault())
 	repo, err := git.Open(s, wt)
 	if err != nil {
@@ -60,7 +59,7 @@ func CheckoutDofRepo(workDir, repoFolder, repoUrl, branch string) (*dofRepo, err
 		return nil, err
 	}
 
-	traceLogger.Debug("dot.Root()", dot.Root())
+	traceLogger.Debug("dot.Root() ", dot.Root())
 
 	opts := &git.CloneOptions{
 		URL:      repoUrl,
@@ -158,9 +157,14 @@ func (dof *dofRepo) AddFile(file string) error {
 }
 
 func (dof *dofRepo) Status() ([]byte, error) {
-	status := exec.Command("git", fmt.Sprintf("--git-dir=%s", dof.repoFolderPath), fmt.Sprintf("--work-tree=%s", dof.workDirPath), "status", "-s")
+	wt, err := dof.Worktree()
+	if err != nil {
+		traceLogger.Error(err)
+		return nil, err
+	}
+	st, err := wt.Status()
 
-	return status.Output()
+	return []byte(st.String()), err
 }
 
 func (dof *dofRepo) addGitIgnore() error {
