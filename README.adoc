@@ -15,7 +15,7 @@ This little tool can be used to manage dot file based on a git bare repository. 
 
 ### Initialize a new repository
 
-If you want to initialize a new repo you could just run `dof init`. This will basically setup a local git repository which can be used to add the dot files via `dof add .dotfilename`. Right now you have to manually add a remote to be able to publish the dot file repository e.g. to github. You can do this with the following command `dof alias remote add <path-to-git-remote-repo>`. Afterward you can run `dof sync` to push all add files to the remote.
+If you want to initialize a new repo you could just run `dof init`. This will basically setup a local git repository which can be used to add the dot files via `dof add .dotfilename`. Right now you have to manually add a remote to be able to publish the dot file repository e.g. to github. You can do this with the following command `dof alias remote add origin <path-to-git-remote-repo>`, `git config --global init.defaultBranch main` and `dof alias branch set-upstream-to origin/main main`. Afterward you can run `dof sync` to push all add files to the remote.
 
 ### Checkout and setup an existing dot file repository
 
