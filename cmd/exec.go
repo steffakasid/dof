@@ -44,7 +44,7 @@ func execCmdAndPrint(cmd *exec.Cmd) {
 
 func execCmdAndReturn(cmd *exec.Cmd) string {
 	output, err := cmd.Output()
-	logger.Info("Output:", output)
+	logger.Info("Output:", string(output))
 	doWePanic(err)
 	return string(output)
 }
