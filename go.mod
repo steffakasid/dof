@@ -1,6 +1,6 @@
 module github.com/steffakasid/dof
 
-go 1.25.6
+go 1.25.7
 
 require (
 	github.com/sirupsen/logrus v1.9.4
