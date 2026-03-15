@@ -38,10 +38,13 @@ func status(cmd *cobra.Command, args []string) {
 	dofRepo, err := internal.OpenDofRepo(workDir, repoFolderName)
 	eh.IsFatalError(err)
 
-	out, err := dofRepo.Status()
+	status, err := dofRepo.Status()
 	eh.IsFatalError(err)
-	if len(out) > 0 {
-		logger.Info(string(out))
+	if len(status) > 0 {
+		for file, s := range status {
+
+			logger.Infof("%s: %s", file, s)
+		}
 	} else {
 		logger.Info("No files changed!")
 	}

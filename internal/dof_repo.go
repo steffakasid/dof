@@ -12,6 +12,7 @@ import (
 	"github.com/go-git/go-git/v5/config"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/cache"
+	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/go-git/go-git/v5/storage/filesystem"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -156,15 +157,68 @@ func (dof *dofRepo) AddFile(file string) error {
 	return err
 }
 
-func (dof *dofRepo) Status() ([]byte, error) {
-	wt, err := dof.Worktree()
+func (dof *dofRepo) Status() (map[string]string, error) {
+	status := make(map[string]string)
+
+	// Get HEAD reference
+	headRef, err := dof.Head()
 	if err != nil {
-		traceLogger.Error(err)
 		return nil, err
 	}
-	st, err := wt.Status()
 
-	return []byte(st.String()), err
+	// Get HEAD commit
+	commit, err := dof.CommitObject(headRef.Hash())
+	if err != nil {
+		return nil, err
+	}
+
+	// Get tree of HEAD
+	tree, err := commit.Tree()
+	if err != nil {
+		return nil, err
+	}
+
+	// Get worktree for reading files
+	wt, err := dof.Worktree()
+	if err != nil {
+		return nil, err
+	}
+
+	// Iterate over tracked files
+	err = tree.Files().ForEach(func(f *object.File) error {
+		workFile := f.Name
+
+		// Open the working tree file
+		wf, err := os.Open(workFile)
+		if err != nil {
+			// File missing in working tree = deleted
+			status[workFile] = "D"
+			return nil
+		}
+		defer wf.Close()
+
+		// Compare hashes
+		blobHash := f.Hash
+
+    
+		workBlobHash := plumbing.ComputeHash(plumbing.BlobObject, wf)
+		if err != nil {
+			return err
+		}
+
+		if blobHash != workBlobHash {
+			status[workFile] = "M" // modified
+		} else {
+			status[workFile] = " " // unchanged
+		}
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return status, nil
 }
 
 func (dof *dofRepo) addGitIgnore() error {
@@ -182,7 +236,10 @@ func (dof *dofRepo) addGitIgnore() error {
 			log.Fatalf("Got error while writing to a file. Err: %s", err.Error())
 		}
 	}
-	writer.Flush()
+	err = writer.Flush()
+	if err != nil {
+		return err
+	}
 
 	return dof.AddFile(gitIgnore)
 }
