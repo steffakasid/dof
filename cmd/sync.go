@@ -22,8 +22,8 @@ import (
 )
 
 var (
-	dontPush bool
-	dontPull bool
+	pushOnly bool
+	pullOnly bool
 )
 
 var syncCmd = &cobra.Command{
@@ -44,8 +44,8 @@ var syncCmd = &cobra.Command{
   dof sync --push-only - only add, commit and push changes to the remote repository
   dof sync --pull-only - only pull changes from the remote repository`,
 	RunE: func(_ *cobra.Command, _ []string) error {
-		logger.Debugf("Don't push %v", dontPush)
-		if !dontPush {
+		logger.Debugf("Push only: %v", pushOnly)
+		if !pullOnly {
 			gitStatus := *gitAlias
 			gitStatus.Args = append(gitStatus.Args, "status", "-s")
 			status, err := execCmdAndReturn(&gitStatus)
@@ -68,8 +68,8 @@ var syncCmd = &cobra.Command{
 				}
 			}
 		}
-		logger.Debugf("Don't pull %v", dontPull)
-		if !dontPull {
+		logger.Debugf("Pull only: %v", pullOnly)
+		if !pushOnly {
 			logger.Info("Pulling changes from repo...")
 			gitPull := *gitAlias
 			gitPull.Args = append(gitPull.Args, "pull", "--rebase")
@@ -83,8 +83,9 @@ var syncCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(syncCmd)
-	syncCmd.Flags().BoolVarP(&dontPull, "push-only", "P", false, "Only push changes to remote repository.")
-	syncCmd.Flags().BoolVarP(&dontPush, "pull-only", "p", false, "Only pull changes from remote repository.")
+	syncCmd.Flags().BoolVarP(&pushOnly, "push-only", "P", false, "Only push changes to remote")
+	syncCmd.Flags().BoolVarP(&pullOnly, "pull-only", "p", false, "Only pull changes from remote")
+	syncCmd.MarkFlagsMutuallyExclusive("push-only", "pull-only")
 	if logger == nil {
 		logger = NewOutputLogger(1)
 	}

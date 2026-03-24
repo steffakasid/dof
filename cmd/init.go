@@ -83,7 +83,7 @@ var remoteURL string
 
 func init() {
 	rootCmd.AddCommand(initCmd)
-	initCmd.Flags().StringVar(&remoteURL, "remote", "", "Remote URL to add as origin")
+	initCmd.Flags().StringVar(&remoteURL, "remote", "", "Remote URL to add as origin after init")
 	if logger == nil {
 		logger = NewOutputLogger(1)
 	}

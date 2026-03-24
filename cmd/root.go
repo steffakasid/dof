@@ -80,7 +80,7 @@ func init() {
 }
 
 func initFlags() {
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.dof.yaml)")
+	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "Config file (default is $HOME/.dof.yaml)")
 	rootCmd.PersistentFlags().StringVar(&profileName, "profile", "", "Named profile to use (defined in config file)")
 
 	viper.SetDefault("repository", path.Join(userHomeDir, ".dof"))
@@ -91,7 +91,7 @@ func initFlags() {
 		applyProfile(profileName)
 	}
 
-	rootCmd.PersistentFlags().StringP("repository", "r", viper.GetString("repository"), "Repository folder to create a bare repository inside")
+	rootCmd.PersistentFlags().StringP("repository", "r", viper.GetString("repository"), "Path to the bare git repository")
 	if err := viper.BindPFlag("repository", rootCmd.PersistentFlags().Lookup("repository")); err != nil {
 		fmt.Fprintln(os.Stderr, "Error binding repository flag:", err)
 		os.Exit(1)
@@ -105,7 +105,7 @@ func initFlags() {
 	gitAlias = exec.Command("git", "--git-dir="+viper.GetString("repository"), "--work-tree="+workDir)
 
 	logger.Debugln("branch:", viper.GetString("branch"))
-	rootCmd.PersistentFlags().StringP("branch", "b", viper.GetString("branch"), "Set the branch to use")
+	rootCmd.PersistentFlags().StringP("branch", "b", viper.GetString("branch"), "Git branch to track")
 	if err := viper.BindPFlag("branch", rootCmd.PersistentFlags().Lookup("branch")); err != nil {
 		fmt.Fprintln(os.Stderr, "Error binding branch flag:", err)
 		os.Exit(1)

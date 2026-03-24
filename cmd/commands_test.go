@@ -151,15 +151,26 @@ func TestCheckoutCommand(t *testing.T) {
 }
 
 func TestSyncCommandPushOnly(t *testing.T) {
-	// Set up a repo with a remote to test sync
 	tmpDir := setupTestEnv(t)
 	repoPath := filepath.Join(tmpDir, ".dof")
+
+	// Create a bare remote repo to push to
+	remoteDir := t.TempDir()
+	remoteRepo := filepath.Join(remoteDir, "remote.git")
+	gitInitBare := exec.Command("git", "init", "--bare", remoteRepo)
+	require.NoError(t, gitInitBare.Run())
 
 	err := os.MkdirAll(repoPath, 0700)
 	require.NoError(t, err)
 
 	err = initCmd.RunE(initCmd, nil)
 	require.NoError(t, err)
+
+	// Add remote origin
+	gitAlias = exec.Command("git", "--git-dir="+repoPath, "--work-tree="+tmpDir)
+	gitRemoteAdd := *gitAlias
+	gitRemoteAdd.Args = append(gitRemoteAdd.Args, "remote", "add", "origin", remoteRepo)
+	require.NoError(t, gitRemoteAdd.Run())
 
 	// Create and add a test file
 	gitAlias = exec.Command("git", "--git-dir="+repoPath, "--work-tree="+tmpDir)
@@ -170,24 +181,22 @@ func TestSyncCommandPushOnly(t *testing.T) {
 	err = addCmd.RunE(addCmd, []string{testFile})
 	require.NoError(t, err)
 
-	// Modify the tracked file
+	// Modify the tracked file so sync has something to commit and push
 	gitAlias = exec.Command("git", "--git-dir="+repoPath, "--work-tree="+tmpDir)
 	err = os.WriteFile(testFile, []byte("# zsh config\nalias ll='ls -la'"), 0600)
 	require.NoError(t, err)
 
-	// Sync with push-only (no remote, so push will fail, but commit should succeed)
-	// We set dontPull=true, dontPush=false but since there's no remote, push will error
-	// Instead, test that the commit step works by checking pull-only mode
-	dontPush = true
-	dontPull = true
+	// Test push-only mode: should commit and push, but not pull
+	pushOnly = true
+	pullOnly = false
 
 	gitAlias = exec.Command("git", "--git-dir="+repoPath, "--work-tree="+tmpDir)
 	err = syncCmd.RunE(syncCmd, nil)
 	require.NoError(t, err)
 
 	// Reset flags
-	dontPush = false
-	dontPull = false
+	pushOnly = false
+	pullOnly = false
 }
 
 func TestInitCommandWithRemote(t *testing.T) {

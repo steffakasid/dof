@@ -76,7 +76,7 @@ Legend: `[x]` = done, `[ ]` = to do
 - [x] **[Config]** REQ-11 – Multi-repo / profile support
   _Done when:_ Config file supports named profiles; `--profile` flag selects the active profile; each profile has its own repo path, branch, and remote; tested.
 
-- [ ] **[Flags]** REQ-12 – Refactor global flags for consistency
+- [x] **[Flags]** REQ-12 – Refactor global flags for consistency
   _Done when:_ Flags follow a consistent naming convention; no redundant flags remain; existing behaviour is preserved; all defined flags are verified to work as intended; tested.
 
 ---
