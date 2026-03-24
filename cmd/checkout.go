@@ -17,6 +17,7 @@ limitations under the License.
 */
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"path"
@@ -43,21 +44,27 @@ var checkoutCmd = &cobra.Command{
 
   Examples:
   dof checkout git@github.com:steffakasid/my-dot-files.git`,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(_ *cobra.Command, args []string) error {
 		logger.Info("Cloning bare repo...")
 		gitClone := exec.Command("git", "clone", "--bare", args[0], viper.GetString("repository"))
-		execCmdAndPrint(gitClone)
+		if err := execCmdAndPrint(gitClone); err != nil {
+			return err
+		}
 
-		logger.Info(("Configure to not show untracked fiels..."))
-		doNotShowUntrackedFiles()
+		logger.Info("Configure to not show untracked files...")
+		if err := doNotShowUntrackedFiles(); err != nil {
+			return err
+		}
 
 		logger.Info("Rename old files as backup...")
-		renameOldFiles()
+		if err := renameOldFiles(); err != nil {
+			return err
+		}
 
 		logger.Info("Checkout branch...")
 		gitCheckout := *gitAlias
 		gitCheckout.Args = append(gitCheckout.Args, "checkout", viper.GetString("branch"))
-		execCmdAndPrint(&gitCheckout)
+		return execCmdAndPrint(&gitCheckout)
 	},
 }
 
@@ -65,19 +72,29 @@ func init() {
 	rootCmd.AddCommand(checkoutCmd)
 }
 
-func renameOldFiles() {
-	err := os.Chdir(workDir)
-	doWePanic(err)
+func renameOldFiles() error {
+	if err := os.Chdir(workDir); err != nil {
+		return fmt.Errorf("failed to change directory to %s: %w", workDir, err)
+	}
 
 	gitTree := *gitAlias
 
 	gitTreeArgs := []string{"ls-tree", "--name-only", viper.GetString("branch")}
 	gitTree.Args = append(gitTree.Args, gitTreeArgs...)
 
-	filesString := execCmdAndReturn(&gitTree)
+	filesString, err := execCmdAndReturn(&gitTree)
+	if err != nil {
+		return err
+	}
 	files := strings.Split(filesString, "\n")
 	for _, file := range files {
+		if file == "" {
+			continue
+		}
 		logger.Infof("Rename %s to %s", path.Join(workDir, file), path.Join(workDir, file+"_before_dof"))
-		os.Rename(path.Join(workDir, file), path.Join(workDir, file+"_before_dof"))
+		if err := os.Rename(path.Join(workDir, file), path.Join(workDir, file+"_before_dof")); err != nil && !os.IsNotExist(err) {
+			return fmt.Errorf("failed to rename %s: %w", file, err)
+		}
 	}
+	return nil
 }

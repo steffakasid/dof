@@ -18,7 +18,7 @@ limitations under the License.
 
 import (
 	"bufio"
-	"log"
+	"fmt"
 	"os"
 	"os/exec"
 	"path"
@@ -45,19 +45,25 @@ var initCmd = &cobra.Command{
   dot alias remote add origin <git-repo-url>
   dot add .zshrc
   dot sync --push-only`,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(_ *cobra.Command, _ []string) error {
 		logger.Info("Initialize git bare repository...")
 		// git init --bare $HOME/.cfg
 		gitInit := exec.Command("git", "init", "--bare", viper.GetString("repository"))
-		execCmdAndPrint(gitInit)
+		if err := execCmdAndPrint(gitInit); err != nil {
+			return err
+		}
 
 		logger.Infof("Checkout %s branch\n", viper.GetString("branch"))
 		gitCheckout := exec.Command("git", "checkout", "-B", viper.GetString("branch"))
-		execCmdAndPrint(gitCheckout)
+		if err := execCmdAndPrint(gitCheckout); err != nil {
+			return err
+		}
 
-		doNotShowUntrackedFiles()
+		if err := doNotShowUntrackedFiles(); err != nil {
+			return err
+		}
 
-		addGitIgnore()
+		return addGitIgnore()
 	},
 }
 
@@ -68,31 +74,34 @@ func init() {
 	}
 }
 
-func addGitIgnore() {
+func addGitIgnore() error {
 	gitIgnore := path.Join(workDir, ".gitignore")
 	file, err := os.Create(gitIgnore)
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("failed to create .gitignore: %w", err)
 	}
+	defer func() { _ = file.Close() }()
+
 	writer := bufio.NewWriter(file)
 
 	linesToWrite := []string{repoPathName}
 	for _, line := range linesToWrite {
-		_, err := writer.WriteString(line + "\n")
-		if err != nil {
-			log.Fatalf("Got error while writing to a file. Err: %s", err.Error())
+		if _, err := writer.WriteString(line + "\n"); err != nil {
+			return fmt.Errorf("failed to write to .gitignore: %w", err)
 		}
 	}
-	writer.Flush()
+	if err := writer.Flush(); err != nil {
+		return fmt.Errorf("failed to flush .gitignore: %w", err)
+	}
 
-	addAndCommit(gitIgnore)
+	return addAndCommit(gitIgnore)
 }
 
-func doNotShowUntrackedFiles() {
+func doNotShowUntrackedFiles() error {
 	// alias config='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME'
 	// config config --local status.showUntrackedFiles no
 	gitConfigure := *gitAlias
 	gitConfigArgs := []string{"config", "--local", "status.showUntrackedFiles", "no"}
 	gitConfigure.Args = append(gitConfigure.Args, gitConfigArgs...)
-	execCmdAndPrint(&gitConfigure)
+	return execCmdAndPrint(&gitConfigure)
 }

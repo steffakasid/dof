@@ -26,15 +26,13 @@ var statusCmd = &cobra.Command{
 	Args:  cobra.NoArgs,
 	Short: "Get git status of repository",
 	Long:  `Get git status of repository`,
-	Run:   status,
-}
-
-func status(cmd *cobra.Command, args []string) {
-	gitStatus := *gitAlias
-	gitStatusArgs := []string{"status", "-s"}
-	gitStatus.Args = append(gitStatus.Args, gitStatusArgs...)
-	logger.Info("Status of dof repository...")
-	execCmdAndPrint(&gitStatus)
+	RunE: func(_ *cobra.Command, _ []string) error {
+		gitStatus := *gitAlias
+		gitStatusArgs := []string{"status", "-s"}
+		gitStatus.Args = append(gitStatus.Args, gitStatusArgs...)
+		logger.Info("Status of dof repository...")
+		return execCmdAndPrint(&gitStatus)
+	},
 }
 
 func init() {

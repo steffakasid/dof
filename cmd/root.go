@@ -1,3 +1,4 @@
+// Package cmd implements the CLI commands for dof.
 package cmd
 
 /*
@@ -17,6 +18,7 @@ limitations under the License.
 */
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"path"
@@ -39,6 +41,7 @@ var rootCmd = &cobra.Command{
   to avoid this chicken and egg problem. I decided to write a little go program and here it is ;)
 
   The tool expects to use git from the path. So if you don't have git, it will not work!`,
+	Version: version,
 }
 
 var (
@@ -53,11 +56,12 @@ var (
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		logger.Fatal(err)
+		os.Exit(1)
 	}
 
 	if err := viper.WriteConfig(); err != nil {
-		logger.Fatal(err)
+		fmt.Fprintln(os.Stderr, "Error writing config:", err)
+		os.Exit(1)
 	}
 }
 
@@ -67,7 +71,10 @@ func init() {
 		logger = NewOutputLogger(1)
 	}
 	userHomeDir, err = os.UserHomeDir()
-	doWePanic(err)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Error getting home directory:", err)
+		os.Exit(1)
+	}
 	cobra.OnInitialize(initConfig, initFlags)
 }
 
@@ -76,8 +83,14 @@ func initFlags() {
 
 	viper.SetDefault("repository", path.Join(userHomeDir, ".dof"))
 	rootCmd.PersistentFlags().StringP("repository", "r", viper.GetString("repository"), "Repository folder to create a bare repository inside")
-	doWePanic(viper.BindPFlag("repository", rootCmd.PersistentFlags().Lookup("repository")))
-	doWePanic(os.MkdirAll(viper.GetString("repository"), 0700))
+	if err := viper.BindPFlag("repository", rootCmd.PersistentFlags().Lookup("repository")); err != nil {
+		fmt.Fprintln(os.Stderr, "Error binding repository flag:", err)
+		os.Exit(1)
+	}
+	if err := os.MkdirAll(viper.GetString("repository"), 0700); err != nil {
+		fmt.Fprintln(os.Stderr, "Error creating repository directory:", err)
+		os.Exit(1)
+	}
 
 	workDir, repoPathName = filepath.Split(viper.GetString("repository"))
 	gitAlias = exec.Command("git", "--git-dir="+viper.GetString("repository"), "--work-tree="+workDir)
@@ -85,7 +98,10 @@ func initFlags() {
 	viper.SetDefault("branch", "main")
 	logger.Debugln("branch:", viper.GetString("branch"))
 	rootCmd.PersistentFlags().StringP("branch", "b", viper.GetString("branch"), "Set the branch to use")
-	doWePanic(viper.BindPFlag("branch", rootCmd.PersistentFlags().Lookup("branch")))
+	if err := viper.BindPFlag("branch", rootCmd.PersistentFlags().Lookup("branch")); err != nil {
+		fmt.Fprintln(os.Stderr, "Error binding branch flag:", err)
+		os.Exit(1)
+	}
 }
 
 func initConfig() {
