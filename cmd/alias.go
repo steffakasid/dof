@@ -42,9 +42,11 @@ var aliasCmd = &cobra.Command{
 
 	To force push to the remote you could just run:
 	'dof alias push origin main --force`,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		gitAlias.Args = append(gitAlias.Args, args...)
-		execCmdAndPrint(gitAlias)
+		if err := execCmdAndPrint(gitAlias); err != nil {
+			logger.Error(err)
+		}
 	},
 }
 

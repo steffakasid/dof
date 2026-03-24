@@ -15,16 +15,11 @@ limitations under the License.
 
 import (
 	"bytes"
+	"fmt"
 	"os/exec"
-
-	"github.com/sirupsen/logrus"
 )
 
-var (
-	traceLogger *Logger
-)
-
-func execCmdAndPrint(cmd *exec.Cmd) {
+func execCmdAndPrint(cmd *exec.Cmd) error {
 	var out bytes.Buffer
 	var stderr bytes.Buffer
 
@@ -39,24 +34,22 @@ func execCmdAndPrint(cmd *exec.Cmd) {
 		logger.Error(stderr.String())
 	}
 
-	doWePanic(err)
-}
-
-func execCmdAndReturn(cmd *exec.Cmd) string {
-	output, err := cmd.Output()
-	logger.Info("Output:", string(output))
-	doWePanic(err)
-	return string(output)
-}
-
-func doWePanic(err error) {
 	if err != nil {
-		traceLogger.Fatal(err)
+		return fmt.Errorf("command %s failed: %w", cmd.Path, err)
 	}
+	return nil
+}
+
+func execCmdAndReturn(cmd *exec.Cmd) (string, error) {
+	output, err := cmd.Output()
+	if err != nil {
+		return "", fmt.Errorf("command %s failed: %w", cmd.Path, err)
+	}
+	logger.Info("Output:", string(output))
+	return string(output), nil
 }
 
 func init() {
-	traceLogger = NewTraceLogger(logrus.DebugLevel, 2)
 	if logger == nil {
 		logger = NewOutputLogger(1)
 	}

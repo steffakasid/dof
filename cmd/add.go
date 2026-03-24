@@ -33,8 +33,8 @@ var addCmd = &cobra.Command{
 
   Examples:
   dof add .zshrc - add .zshrc to dot file repository`,
-	Run: func(cmd *cobra.Command, args []string) {
-		addAndCommit(args[0])
+	RunE: func(_ *cobra.Command, args []string) error {
+		return addAndCommit(args[0])
 	},
 }
 
@@ -45,17 +45,19 @@ func init() {
 	}
 }
 
-func addAndCommit(file string) {
+func addAndCommit(file string) error {
 	logger.Infof("Add file %s to dof repository", file)
 	// config add .vimrc
 	gitAdd := *gitAlias
 	gitAddArgs := []string{"add", file}
 	gitAdd.Args = append(gitAdd.Args, gitAddArgs...)
-	execCmdAndPrint(&gitAdd)
+	if err := execCmdAndPrint(&gitAdd); err != nil {
+		return err
+	}
 
 	// config commit -m "Add vimrc"
 	gitCommit := *gitAlias
 	gitCommitArgs := []string{"commit", "-m", "Add " + file}
 	gitCommit.Args = append(gitCommit.Args, gitCommitArgs...)
-	execCmdAndPrint(&gitCommit)
+	return execCmdAndPrint(&gitCommit)
 }

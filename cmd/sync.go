@@ -43,22 +43,29 @@ var syncCmd = &cobra.Command{
   dof sync             - simply push and pull changes to/from the remote repository
   dof sync --push-only - only add, commit and push changes to the remote repository
   dof sync --pull-only - only pull changes from the remote repository`,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(_ *cobra.Command, _ []string) error {
 		logger.Debugf("Don't push %v", dontPush)
 		if !dontPush {
 			gitStatus := *gitAlias
 			gitStatus.Args = append(gitStatus.Args, "status", "-s")
-			status := execCmdAndReturn(&gitStatus)
+			status, err := execCmdAndReturn(&gitStatus)
+			if err != nil {
+				return err
+			}
 			logger.Debugf("Status of dof %s", status)
 			if len(status) > 0 {
-				logger.Info("Commiting changed files...")
+				logger.Info("Committing changed files...")
 				gitCommit := *gitAlias
 				gitCommit.Args = append(gitCommit.Args, "commit", "-a", "-m", "Synchronized dot files")
-				execCmdAndPrint(&gitCommit)
+				if err := execCmdAndPrint(&gitCommit); err != nil {
+					return err
+				}
 				logger.Info("Pushing files")
 				gitPush := *gitAlias
 				gitPush.Args = append(gitPush.Args, "push", "origin", viper.GetString("branch"), "-u")
-				execCmdAndPrint(&gitPush)
+				if err := execCmdAndPrint(&gitPush); err != nil {
+					return err
+				}
 			}
 		}
 		logger.Debugf("Don't pull %v", dontPull)
@@ -66,8 +73,11 @@ var syncCmd = &cobra.Command{
 			logger.Info("Pulling changes from repo...")
 			gitPull := *gitAlias
 			gitPull.Args = append(gitPull.Args, "pull", "--rebase")
-			execCmdAndPrint(&gitPull)
+			if err := execCmdAndPrint(&gitPull); err != nil {
+				return err
+			}
 		}
+		return nil
 	},
 }
 
