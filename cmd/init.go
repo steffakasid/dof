@@ -39,12 +39,14 @@ var initCmd = &cobra.Command{
   2. git checkout -B <branch-name>
   3. disable show untracked files in <work-dir>
   4. add .gitignore to <work-dir> to ignore <repo-path>
+  5. (optional) add origin remote and set upstream
 
   Example Usage:
-  dot init
-  dot alias remote add origin <git-repo-url>
-  dot add .zshrc
-  dot sync --push-only`,
+  dof init
+  dof init --remote git@github.com:user/dotfiles.git
+  dof alias remote add origin <git-repo-url>
+  dof add .zshrc
+  dof sync --push-only`,
 	RunE: func(_ *cobra.Command, _ []string) error {
 		logger.Info("Initialize git bare repository...")
 		// git init --bare $HOME/.cfg
@@ -63,15 +65,50 @@ var initCmd = &cobra.Command{
 			return err
 		}
 
-		return addGitIgnore()
+		if err := addGitIgnore(); err != nil {
+			return err
+		}
+
+		if remoteURL != "" {
+			if err := addRemote(remoteURL); err != nil {
+				return err
+			}
+		}
+
+		return nil
 	},
 }
 
+var remoteURL string
+
 func init() {
 	rootCmd.AddCommand(initCmd)
+	initCmd.Flags().StringVar(&remoteURL, "remote", "", "Remote URL to add as origin")
 	if logger == nil {
 		logger = NewOutputLogger(1)
 	}
+}
+
+func addRemote(url string) error {
+	logger.Infof("Adding remote origin %s...", url)
+	gitRemote := *gitAlias
+	gitRemote.Args = append(gitRemote.Args, "remote", "add", "origin", url)
+	if err := execCmdAndPrint(&gitRemote); err != nil {
+		return err
+	}
+
+	logger.Infof("Setting upstream to origin/%s...", viper.GetString("branch"))
+	gitFetch := *gitAlias
+	gitFetch.Args = append(gitFetch.Args, "fetch", "origin")
+	// Fetch may fail if remote is empty/unreachable, that's ok
+	_ = execCmdAndPrint(&gitFetch)
+
+	gitUpstream := *gitAlias
+	gitUpstream.Args = append(gitUpstream.Args, "branch", "--set-upstream-to=origin/"+viper.GetString("branch"))
+	// Set upstream may fail if remote branch doesn't exist yet, that's ok
+	_ = execCmdAndPrint(&gitUpstream)
+
+	return nil
 }
 
 func addGitIgnore() error {

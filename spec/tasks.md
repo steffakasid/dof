@@ -70,7 +70,7 @@ Legend: `[x]` = done, `[ ]` = to do
 
 ## 5. Planned Features
 
-- [ ] **[cmd/init]** REQ-10 – Accept `--remote` flag during init
+- [x] **[cmd/init]** REQ-10 – Accept `--remote` flag during init
   _Done when:_ `dof init --remote <url>` adds origin and sets upstream; tested.
 
 - [ ] **[Config]** REQ-11 – Multi-repo / profile support

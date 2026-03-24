@@ -189,3 +189,35 @@ func TestSyncCommandPushOnly(t *testing.T) {
 	dontPush = false
 	dontPull = false
 }
+
+func TestInitCommandWithRemote(t *testing.T) {
+	// Phase 1: Create a source bare repo to use as remote
+	srcDir := t.TempDir()
+	srcRepo := filepath.Join(srcDir, "remote.git")
+
+	gitInitBare := exec.Command("git", "init", "--bare", srcRepo)
+	err := gitInitBare.Run()
+	require.NoError(t, err)
+
+	// Phase 2: Init with --remote pointing to srcRepo
+	tmpDir := setupTestEnv(t)
+	repoPath := filepath.Join(tmpDir, ".dof")
+
+	err = os.MkdirAll(repoPath, 0700)
+	require.NoError(t, err)
+
+	remoteURL = srcRepo
+	t.Cleanup(func() { remoteURL = "" })
+
+	err = initCmd.RunE(initCmd, nil)
+	require.NoError(t, err)
+
+	// Verify remote was added
+	gitAlias = exec.Command("git", "--git-dir="+repoPath, "--work-tree="+tmpDir)
+	gitRemoteV := *gitAlias
+	gitRemoteV.Args = append(gitRemoteV.Args, "remote", "-v")
+	output, err := execCmdAndReturn(&gitRemoteV)
+	require.NoError(t, err)
+	assert.Contains(t, output, "origin")
+	assert.Contains(t, output, srcRepo)
+}
