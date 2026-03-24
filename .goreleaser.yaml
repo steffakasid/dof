@@ -14,7 +14,7 @@ builds:
     flags:
       - -tags=release
     ldflags:
-      - "-X cmd.version={{.Version}}"
+      - "-X main.version={{.Version}}"
 checksum:
   name_template: "checksums.txt"
 changelog:

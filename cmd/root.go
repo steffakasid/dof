@@ -30,7 +30,7 @@ import (
 )
 
 var cfgFile string
-var version = "not set"
+var version string
 var profileName string
 
 var rootCmd = &cobra.Command{
@@ -42,7 +42,6 @@ var rootCmd = &cobra.Command{
   to avoid this chicken and egg problem. I decided to write a little go program and here it is ;)
 
   The tool expects to use git from the path. So if you don't have git, it will not work!`,
-	Version: version,
 }
 
 var (
@@ -55,7 +54,9 @@ var (
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
-func Execute() {
+func Execute(v string) {
+	version = v
+	rootCmd.Version = v
 	if err := rootCmd.Execute(); err != nil {
 		os.Exit(1)
 	}

@@ -17,6 +17,8 @@ package main
 
 import "github.com/steffakasid/dof/cmd"
 
+var version = "0.1-dev"
+
 func main() {
-	cmd.Execute()
+	cmd.Execute(version)
 }
