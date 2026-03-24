@@ -57,7 +57,7 @@ Legend: `[x]` = done, `[ ]` = to do
 
 ## 4. Testing
 
-- [ ] **[Testing]** Add unit tests for `execCmdAndPrint` and `execCmdAndReturn`
+- [x] **[Testing]** Add unit tests for `execCmdAndPrint` and `execCmdAndReturn`
   _Done when:_ Tests exist in `cmd/exec_test.go`; they cover success and error cases using mocked commands.
 
 - [ ] **[Testing]** Add unit tests for `Logger`
