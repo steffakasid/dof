@@ -73,7 +73,7 @@ Legend: `[x]` = done, `[ ]` = to do
 - [x] **[cmd/init]** REQ-10 – Accept `--remote` flag during init
   _Done when:_ `dof init --remote <url>` adds origin and sets upstream; tested.
 
-- [ ] **[Config]** REQ-11 – Multi-repo / profile support
+- [x] **[Config]** REQ-11 – Multi-repo / profile support
   _Done when:_ Config file supports named profiles; `--profile` flag selects the active profile; each profile has its own repo path, branch, and remote; tested.
 
 - [ ] **[Flags]** REQ-12 – Refactor global flags for consistency

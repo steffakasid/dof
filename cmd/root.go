@@ -31,6 +31,7 @@ import (
 
 var cfgFile string
 var version = "not set"
+var profileName string
 
 var rootCmd = &cobra.Command{
 	Use:   "dof",
@@ -80,8 +81,16 @@ func init() {
 
 func initFlags() {
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.dof.yaml)")
+	rootCmd.PersistentFlags().StringVar(&profileName, "profile", "", "Named profile to use (defined in config file)")
 
 	viper.SetDefault("repository", path.Join(userHomeDir, ".dof"))
+	viper.SetDefault("branch", "main")
+
+	// If a profile is selected, override defaults from profile config
+	if profileName != "" {
+		applyProfile(profileName)
+	}
+
 	rootCmd.PersistentFlags().StringP("repository", "r", viper.GetString("repository"), "Repository folder to create a bare repository inside")
 	if err := viper.BindPFlag("repository", rootCmd.PersistentFlags().Lookup("repository")); err != nil {
 		fmt.Fprintln(os.Stderr, "Error binding repository flag:", err)
@@ -95,12 +104,26 @@ func initFlags() {
 	workDir, repoPathName = filepath.Split(viper.GetString("repository"))
 	gitAlias = exec.Command("git", "--git-dir="+viper.GetString("repository"), "--work-tree="+workDir)
 
-	viper.SetDefault("branch", "main")
 	logger.Debugln("branch:", viper.GetString("branch"))
 	rootCmd.PersistentFlags().StringP("branch", "b", viper.GetString("branch"), "Set the branch to use")
 	if err := viper.BindPFlag("branch", rootCmd.PersistentFlags().Lookup("branch")); err != nil {
 		fmt.Fprintln(os.Stderr, "Error binding branch flag:", err)
 		os.Exit(1)
+	}
+}
+
+func applyProfile(name string) {
+	profileKey := "profiles." + name
+	if !viper.IsSet(profileKey) {
+		fmt.Fprintf(os.Stderr, "Profile %q not found in config\n", name)
+		os.Exit(1)
+	}
+
+	if repo := viper.GetString(profileKey + ".repository"); repo != "" {
+		viper.Set("repository", repo)
+	}
+	if branch := viper.GetString(profileKey + ".branch"); branch != "" {
+		viper.Set("branch", branch)
 	}
 }
 

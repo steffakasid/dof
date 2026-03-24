@@ -221,3 +221,49 @@ func TestInitCommandWithRemote(t *testing.T) {
 	assert.Contains(t, output, "origin")
 	assert.Contains(t, output, srcRepo)
 }
+
+func TestApplyProfile(t *testing.T) {
+	tests := []struct {
+		name        string
+		profile     string
+		setupConfig func()
+		wantRepo    string
+		wantBranch  string
+		wantErr     bool
+	}{
+		{
+			name:    "profile overrides repository and branch",
+			profile: "work",
+			setupConfig: func() {
+				viper.Set("profiles.work.repository", "/tmp/work-dof")
+				viper.Set("profiles.work.branch", "develop")
+			},
+			wantRepo:   "/tmp/work-dof",
+			wantBranch: "develop",
+		},
+		{
+			name:    "profile overrides only repository",
+			profile: "personal",
+			setupConfig: func() {
+				viper.Set("profiles.personal.repository", "/tmp/personal-dof")
+				viper.SetDefault("branch", "main")
+			},
+			wantRepo:   "/tmp/personal-dof",
+			wantBranch: "main",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			viper.Reset()
+			viper.SetDefault("repository", "/default/.dof")
+			viper.SetDefault("branch", "main")
+			tt.setupConfig()
+
+			applyProfile(tt.profile)
+
+			assert.Equal(t, tt.wantRepo, viper.GetString("repository"))
+			assert.Equal(t, tt.wantBranch, viper.GetString("branch"))
+		})
+	}
+}
