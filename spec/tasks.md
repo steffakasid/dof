@@ -63,7 +63,7 @@ Legend: `[x]` = done, `[ ]` = to do
 - [x] **[Testing]** Add unit tests for `Logger`
   _Done when:_ Tests exist in `cmd/logger_test.go`; they validate trace vs. output logger behaviour.
 
-- [ ] **[Testing]** Add integration tests for core commands (init, checkout, add, sync, status)
+- [x] **[Testing]** Add integration tests for core commands (init, checkout, add, sync, status)
   _Done when:_ Tests exist that exercise each command against a temporary git repo; coverage ≥ 80 % for core logic.
 
 ---
