@@ -25,8 +25,8 @@ changelog:
       - "^test:"
 # .goreleaser.yaml
 brews:
-  - # GitHub/GitLab repository to push the formula to
-    repository:
+  # GitHub/GitLab repository to push the formula to
+  - repository:
       owner: steffakasid
       name: homebrew-tap
       token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
@@ -44,5 +44,6 @@ brews:
     directory: Formula
 
     homepage: "https://github.com/steffakasid/trivy-project-scanner"
-    description: "Manage your dot files as a git bare repo"
+    description: >-
+      Manage dotfiles in a bare Git repository
     license: "Apache-2.0"

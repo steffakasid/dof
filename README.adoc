@@ -10,6 +10,7 @@ This little tool can be used to manage dot file based on a git bare repository. 
 ## todo
 
 * make it easier to intialize a new repo e.g. use an argument to directly set the remote
+* publish Homebrew formula updates through one shared tap repository for all projects
 
 ## how to use
 
