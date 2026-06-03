@@ -56,8 +56,9 @@ var initCmd = &cobra.Command{
 		}
 
 		logger.Infof("Checkout %s branch\n", viper.GetString("branch"))
-		gitCheckout := exec.Command("git", "checkout", "-B", viper.GetString("branch"))
-		if err := execCmdAndPrint(gitCheckout); err != nil {
+		gitCheckout := *gitAlias
+		gitCheckout.Args = append(gitCheckout.Args, "checkout", "-B", viper.GetString("branch"))
+		if err := execCmdAndPrint(&gitCheckout); err != nil {
 			return err
 		}
 
