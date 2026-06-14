@@ -54,6 +54,10 @@ Example usage:
 			return err
 		}
 
+		if err := ensureLocalGitIdentity(); err != nil {
+			return err
+		}
+
 		logger.Infof("Checkout %s branch\n", viper.GetString("branch"))
 		gitCheckout := *gitAlias
 		gitCheckout.Args = append(gitCheckout.Args, "checkout", "-B", viper.GetString("branch"))
@@ -109,6 +113,25 @@ func addRemote(url string) error {
 	_ = execCmdAndPrint(&gitUpstream)
 
 	return nil
+}
+
+func ensureLocalGitIdentity() error {
+	if err := ensureLocalGitConfigValue("user.name", "dof test"); err != nil {
+		return err
+	}
+	return ensureLocalGitConfigValue("user.email", "dof-test@example.com")
+}
+
+func ensureLocalGitConfigValue(key, fallback string) error {
+	gitGet := *gitAlias
+	gitGet.Args = append(gitGet.Args, "config", "--get", key)
+	if _, err := gitGet.Output(); err == nil {
+		return nil
+	}
+
+	gitSet := *gitAlias
+	gitSet.Args = append(gitSet.Args, "config", "--local", key, fallback)
+	return execCmdAndPrint(&gitSet)
 }
 
 func addGitIgnore() error {

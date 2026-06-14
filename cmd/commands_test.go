@@ -23,6 +23,7 @@ func setupTestEnv(t *testing.T) string {
 	t.Cleanup(func() { _ = os.Chdir(origDir) })
 
 	repoPath := filepath.Join(tmpDir, ".dof")
+	require.NoError(t, os.MkdirAll(repoPath, 0700))
 
 	viper.Set("repository", repoPath)
 	viper.Set("branch", "main")
