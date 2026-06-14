@@ -1,27 +1,164 @@
-# dof
+= dof
 
 image:https://img.shields.io/badge/License-Apache%202.0-blue.svg[link="http://www.apache.org/licenses/LICENSE-2.0"]
 image:https://github.com/steffakasid/dof/actions/workflows/codeql-analysis.yml/badge.svg[link:https://github.com/steffakasid/dof/actions/workflows/codeql-analysis.yml]
 image:https://github.com/steffakasid/dof/actions/workflows/release.yml/badge.svg[link:https://github.com/steffakasid/dof/actions/workflows/release.yml]
 image:https://github.com/steffakasid/dof/actions/workflows/go-test.yml/badge.svg[link:https://github.com/steffakasid/dof/actions/workflows/go-test.yml]
 
-This little tool can be used to manage dot file based on a git bare repository. The basic manual process is described e.g. https://www.atlassian.com/git/tutorials/dotfiles
+dof is a CLI tool for managing dotfiles with a bare git repository. It maps a bare repository into a work tree and provides commands to initialize, checkout, add, synchronize, and manage dotfiles.
 
-## todo
+The tool is written in Go and uses `cobra` for CLI handling, `viper` for configuration, and `logrus` for logging.
 
-* make it easier to intialize a new repo e.g. use an argument to directly set the remote
-* publish Homebrew formula updates through one shared tap repository for all projects
+== General usage
 
-## how to use
+The typical workflow is:
 
-### Initialize a new repository
+* configure the repository path, branch, or profile.
+* initialize or checkout the dotfile repository.
+* add files with `dof add`.
+* sync changes with `dof sync`.
+* use `dof alias` for direct git commands when needed.
 
-If you want to initialize a new repo you could just run `dof init`. This will basically setup a local git repository which can be used to add the dot files via `dof add .dotfilename`. Right now you have to manually add a remote to be able to publish the dot file repository e.g. to github. You can do this with the following command `dof alias remote add origin <path-to-git-remote-repo>`, `git config --global init.defaultBranch main` and `dof alias branch set-upstream-to origin/main main`. Afterward you can run `dof sync` to push all add files to the remote.
+=== Initialize a new repository
 
-### Checkout and setup an existing dot file repository
+When creating a new local dotfile repository:
 
-If you want to checkout an existing repository you can just run `dof checkout <git-remote-repo>`. This command will checkout the repository as a bare repo. Afterwards it will identify all included dot files, rename them and run a checkout on the bare repo. Afterwards you will have your dotfiles setup in your home directory from the dot file repo.
+* `dof init` - creates the bare repo and checks out the configured branch.
+* `dof add <file>` - stages and commits a file into the dotfile repo.
+* `dof alias remote add origin <git-url>` - add a remote repository.
+* `dof sync` - push and pull changes on the configured branch.
 
-## github actions
+If you use a remote repository, you may also need to set the upstream branch manually, for example:
 
-This repo uses https://github.com/marketplace/actions/go-release-binaries to build go binaries
+[source,shell]
+----
+git config --global init.defaultBranch main
+----
+
+=== Checkout an existing repository
+
+To connect to an existing remote dotfile repo:
+
+* `dof checkout <git-remote-repo>` - clones the repo as a bare repository, renames existing local files as backups, and checks out the tracked dotfiles.
+
+=== Synchronize changes
+
+* `dof add <file>` - add and commit a file.
+* `dof status` - show the git status for the current bare repository.
+* `dof sync` - commit local changes, push to origin, and pull remote changes with rebase.
+* `dof sync --push-only` - only commit and push local changes.
+* `dof sync --pull-only` - only pull remote changes.
+
+== Configuration
+
+dof supports configuration in several ways:
+
+* `--config <file>` or `-c` - use a custom config file.
+* `--profile <name>` - select a named profile from the config.
+* `--repository <path>` or `-r` - path to the bare git repository.
+* `--branch <name>` or `-b` - git branch to track.
+* environment variables prefixed with `DOF_`.
+
+The default config file is `$HOME/.dof.yaml`.
+
+Profiles are defined under `profiles.<name>` and can override `repository` and `branch`.
+
+The `--profile` flag selects one named profile from this single config file. That means you can keep multiple repository definitions in one shared config and switch between them at runtime.
+
+Example config:
+
+[source,yaml]
+----
+repository: /home/user/.dof
+branch: main
+profiles:
+  work:
+    repository: /home/user/.dof-work
+    branch: work
+  personal:
+    repository: /home/user/.dof-personal
+    branch: main
+----
+
+Use profiles like this:
+
+* `dof --profile work init`
+* `dof --profile personal sync`
+
+== Command overview
+
+* `dof init` - initialize a bare dotfile repository.
+* `dof checkout <git-repo-url>` - clone and checkout an existing bare repository.
+* `dof add <file>` - add a file to the repository and commit it.
+* `dof status` - show repository status.
+* `dof sync` - sync local and remote changes.
+* `dof alias ...` - run any git command against the configured bare repository.
+* `dof completion <bash|zsh|fish|powershell>` - generate shell completion.
+* `dof version` - print version and build metadata.
+
+== Project structure
+
+* `main.go` - application entrypoint.
+* `cmd/` - CLI command implementations.
+** `root.go` - root command, configuration and flags.
+** `init.go` - repository initialization logic.
+** `checkout.go` - checkout workflow for existing repos.
+** `add.go` - add files to the repository.
+** `sync.go` - sync workflow with remote.
+** `status.go` - git status command.
+** `alias.go` - arbitrary git command support.
+** `completion.go` - shell completion generation.
+** `version.go` - version command.
+* `go.mod`, `go.sum` - module and dependency definitions.
+
+== Dependencies
+
+dof requires `git` to be installed and available on `PATH`.
+
+Go dependencies:
+
+* `github.com/spf13/cobra` - CLI command framework.
+* `github.com/spf13/viper` - configuration and environment handling.
+* `github.com/sirupsen/logrus` - logging.
+* `github.com/stretchr/testify` - unit testing helpers.
+
+Indirect dependencies include the Cobra/Viper ecosystem packages such as `fsnotify`, `pflag`, `afero`, and `yaml.v3`.
+
+== Development
+
+Build the project:
+
+[source,shell]
+----
+go build -o dof ./...
+----
+
+Run the CLI:
+
+[source,shell]
+----
+./dof --help
+go run main.go --help
+----
+
+Run tests:
+
+[source,shell]
+----
+go test ./...
+----
+
+Format the code:
+
+[source,shell]
+----
+go fmt ./...
+----
+
+== Notes
+
+dof is designed to work with one configured repository per invocation. Use profiles, `--repository`, or `--config` to switch between repositories on the same machine.
+
+== GitHub Actions
+
+This repository uses GitHub Actions for continuous integration, including Go tests, CodeQL analysis, and release workflow automation. It also builds binaries for release distribution.
