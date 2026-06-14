@@ -26,7 +26,7 @@ import (
 var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Show dof version information",
-	Long: `Show version and build metadata for dof.`,
+	Long:  `Show version and build metadata for dof.`,
 	Run: func(_ *cobra.Command, _ []string) {
 		fmt.Println("Version: ", version, " build at ", buildTime)
 	},
