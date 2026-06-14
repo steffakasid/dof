@@ -30,17 +30,18 @@ var syncCmd = &cobra.Command{
 	Use:   "sync",
 	Args:  cobra.NoArgs,
 	Short: "Synchronize local changes with the remote repository",
-	Long: `Synchronize local changes with the remote repository. To do so,
-  the command just executes:
-  1. git add --all
-  2. git commit -a -m "Synchronized dot files"
-  3. git push origin <branch-name>
-  4. git pull --rebase
+	Long: `Synchronize local changes with the remote repository.
 
-  If you pull and there are new files in the remote. You must take care to remove the same files if they're already existing.
+By default, this command:
+  1. checks for local changes
+  2. commits changed files
+  3. pushes the configured branch to origin
+  4. pulls remote changes with rebase
 
-  Examples:
-  dof sync             - simply push and pull changes to/from the remote repository
+If no local changes exist, the commit and push steps may be skipped.
+
+Examples:
+  dof sync             - push and pull changes to/from the remote repository
   dof sync --push-only - only add, commit and push changes to the remote repository
   dof sync --pull-only - only pull changes from the remote repository`,
 	RunE: func(_ *cobra.Command, _ []string) error {

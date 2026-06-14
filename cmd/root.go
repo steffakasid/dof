@@ -35,13 +35,12 @@ var profileName string
 
 var rootCmd = &cobra.Command{
 	Use:   "dof",
-	Short: "dof - <do>t <f>ile repository tool",
-	Long: `This tool is indended to setup and use a dot file repository. Basically the idea came
-  when reading https://www.atlassian.com/git/tutorials/dotfiles. But finally I didn't like the
-  way to do it with aliases (which must exist and be defined in a dotfile e.g. zshrc. Therefore
-  to avoid this chicken and egg problem. I decided to write a little go program and here it is ;)
+	Short: "dof - dotfile repository manager",
+	Long: `dof manages dotfiles using a bare git repository.
 
-  The tool expects to use git from the path. So if you don't have git, it will not work!`,
+It uses a configuration file, environment variables, or command flags to select the repository and branch.
+
+This tool requires git to be installed and available in PATH.`,
 }
 
 var (
@@ -82,7 +81,7 @@ func init() {
 
 func initFlags() {
 	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "Config file (default is $HOME/.dof.yaml)")
-	rootCmd.PersistentFlags().StringVar(&profileName, "profile", "", "Named profile to use (defined in config file)")
+	rootCmd.PersistentFlags().StringVar(&profileName, "profile", "", "Named profile to use from the config file")
 
 	viper.SetDefault("repository", path.Join(userHomeDir, ".dof"))
 	viper.SetDefault("branch", "main")
@@ -106,7 +105,7 @@ func initFlags() {
 	gitAlias = exec.Command("git", "--git-dir="+viper.GetString("repository"), "--work-tree="+workDir)
 
 	logger.Debugln("branch:", viper.GetString("branch"))
-	rootCmd.PersistentFlags().StringP("branch", "b", viper.GetString("branch"), "Git branch to track")
+	rootCmd.PersistentFlags().StringP("branch", "b", viper.GetString("branch"), "Git branch to track in the bare repository")
 	if err := viper.BindPFlag("branch", rootCmd.PersistentFlags().Lookup("branch")); err != nil {
 		fmt.Fprintln(os.Stderr, "Error binding branch flag:", err)
 		os.Exit(1)

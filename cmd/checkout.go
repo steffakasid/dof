@@ -31,18 +31,18 @@ import (
 var checkoutCmd = &cobra.Command{
 	Use:   "checkout <git-repo-url>",
 	Args:  cobra.ExactArgs(1),
-	Short: "Checkout a dot file repository from Git and setup dot files",
-	Long: `Checkout a dot file repository from Git and setup dot files.
+	Short: "Clone a bare dotfile repository and checkout tracked files",
+	Long: `Clone a bare git repository containing dotfiles and checkout the tracked files to the work tree.
 
-  Note: If you already have dot files which are in the repository they will be renamed as backup!
+If existing files are tracked by the repository, they are renamed as backups before checkout.
 
-  This command does the following:
-  1. git clone --bare <git-repo-url> <repo-path>
-  2. Disable to show untracked files in <work-dir>
-  3. rename all files in <work-dir> which are in the dot file repository to e.g. .zshrc_before_dof
-  4. git checkout <branch-name>
+This command:
+  1. clones the repository as a bare repo
+  2. disables untracked files in the work tree
+  3. renames conflicting files to <file>_before_dof
+  4. checks out the configured branch
 
-  Examples:
+Example:
   dof checkout git@github.com:steffakasid/my-dot-files.git`,
 	RunE: func(_ *cobra.Command, args []string) error {
 		logger.Info("Cloning bare repo...")

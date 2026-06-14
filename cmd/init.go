@@ -31,20 +31,19 @@ import (
 var initCmd = &cobra.Command{
 	Use:   "init",
 	Args:  cobra.NoArgs,
-	Short: "Setup a folder to be used as dot file repository",
-	Long: `Setup a folder to be used as dot file repository
+	Short: "Initialize a bare dotfile repository",
+	Long: `Initialize a bare git repository for dotfiles.
 
-  The following steps are executed:
-  1. git init --bare <repo-path>
-  2. git checkout -B <branch-name>
-  3. disable show untracked files in <work-dir>
-  4. add .gitignore to <work-dir> to ignore <repo-path>
-  5. (optional) add origin remote and set upstream
+This command:
+  1. creates the bare repository at the configured path
+  2. checks out the configured branch
+  3. disables untracked files in the work tree
+  4. adds .gitignore to ignore the repository directory
+  5. optionally adds an origin remote and sets upstream
 
-  Example Usage:
+Example usage:
   dof init
   dof init --remote git@github.com:user/dotfiles.git
-  dof alias remote add origin <git-repo-url>
   dof add .zshrc
   dof sync --push-only`,
 	RunE: func(_ *cobra.Command, _ []string) error {

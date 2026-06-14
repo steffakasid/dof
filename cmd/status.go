@@ -24,8 +24,8 @@ import (
 var statusCmd = &cobra.Command{
 	Use:   "status",
 	Args:  cobra.NoArgs,
-	Short: "Get git status of repository",
-	Long:  `Get git status of repository`,
+	Short: "Show git status for the configured repository",
+	Long:  `Show the git status for the configured bare repository.`,
 	RunE: func(_ *cobra.Command, _ []string) error {
 		gitStatus := *gitAlias
 		gitStatusArgs := []string{"status", "-s"}
