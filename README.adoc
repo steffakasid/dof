@@ -61,7 +61,7 @@ dof supports configuration in several ways:
 
 The default config file is `$HOME/.dof.yaml`.
 
-Profiles are defined under `profiles.<name>` and can override `repository` and `branch`.
+Profiles are defined under `profiles.<name>` and can override `repository`, `branch`, and `skip_files`.
 
 The `--profile` flag selects one named profile from this single config file. That means you can keep multiple repository definitions in one shared config and switch between them at runtime.
 
@@ -71,10 +71,16 @@ Example config:
 ----
 repository: /home/user/.dof
 branch: main
+skip_files:
+  - README.md
+  - LICENSE
 profiles:
   work:
     repository: /home/user/.dof-work
     branch: work
+    skip_files:
+      - scm-info.yaml
+      - README.adoc
   personal:
     repository: /home/user/.dof-personal
     branch: main
@@ -84,6 +90,59 @@ Use profiles like this:
 
 * `dof --profile work init`
 * `dof --profile personal sync`
+
+=== Adding a profile
+
+To add a new profile, open `$HOME/.dof.yaml` and add an entry under `profiles`:
+
+[source,yaml]
+----
+profiles:
+  myprofile:
+    repository: /home/user/.dof-myprofile
+    branch: main
+    skip_files:
+      - README.md
+----
+
+Each profile can set any combination of `repository`, `branch`, and `skip_files`. Values you omit fall back to the top-level defaults.
+
+Then use the profile with `--profile myprofile`:
+
+[source,shell]
+----
+dof --profile myprofile init
+dof --profile myprofile checkout git@github.com:user/dotfiles.git
+dof --profile myprofile sync
+----
+
+=== Skipping files
+
+Some dotfile repositories contain files that are useful on the remote (e.g. `README.md`, `LICENSE`, `scm-info.yaml`) but should not appear in the home directory. The `skip_files` option excludes these files from the working tree.
+
+Add the files you want to skip to your config:
+
+[source,yaml]
+----
+skip_files:
+  - README.md
+  - README.adoc
+  - LICENSE
+  - scm-info.yaml
+----
+
+This works by setting up git sparse-checkout in non-cone mode. Once applied, the excluded files stay absent across all git operations (checkout, pull, merge) without any extra wrapper logic.
+
+The skip rules are applied automatically when you run `dof init` or `dof checkout`. If you change the `skip_files` list later, run `dof init` again to update the sparse-checkout rules.
+
+To add `skip_files` to an existing repository that was already initialized, just add the list to your `$HOME/.dof.yaml` and run:
+
+[source,shell]
+----
+dof init
+----
+
+This re-applies the sparse-checkout rules and removes the skipped files from your working tree. The files remain tracked in git and are still pushed to the remote — they just do not appear locally.
 
 == Command overview
 
