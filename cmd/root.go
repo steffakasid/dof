@@ -128,8 +128,12 @@ func applyProfile(name string) {
 	if branch := viper.GetString(profileKey + ".branch"); branch != "" {
 		viper.Set("branch", branch)
 	}
-	if skipFiles := viper.GetStringSlice(profileKey + ".skip_files"); len(skipFiles) > 0 {
-		viper.Set("skip_files", skipFiles)
+	// Merge global skip_files with profile-specific skip_files
+	globalSkip := viper.GetStringSlice("skip_files")
+	profileSkip := viper.GetStringSlice(profileKey + ".skip_files")
+	if len(profileSkip) > 0 {
+		merged := append(globalSkip, profileSkip...)
+		viper.Set("skip_files", deduplicate(merged))
 	}
 }
 
@@ -155,4 +159,16 @@ func initConfig() {
 			logger.Fatal(err)
 		}
 	}
+}
+
+func deduplicate(items []string) []string {
+	seen := make(map[string]struct{}, len(items))
+	result := make([]string, 0, len(items))
+	for _, item := range items {
+		if _, ok := seen[item]; !ok {
+			seen[item] = struct{}{}
+			result = append(result, item)
+		}
+	}
+	return result
 }
