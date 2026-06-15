@@ -87,6 +87,9 @@ func initFlags() {
 	viper.SetDefault("skip_files", []string{})
 
 	// If a profile is selected, override defaults from profile config
+	if profileName == "" {
+		profileName = viper.GetString("default_profile")
+	}
 	if profileName != "" {
 		logger.Infof("Using profile: %s", profileName)
 		applyProfile(profileName)
