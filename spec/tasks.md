@@ -88,3 +88,19 @@ Legend: `[x]` = done, `[ ]` = to do
 
 - [x] **[Quality]** Add golangci-lint configuration and fix lint issues
   _Done when:_ `.golangci.yml` exists; `golangci-lint run` passes; CI workflow runs lint.
+
+---
+
+## 7. Skip Files (REQ-13)
+
+- [x] **[Config]** Add `skip_files` viper default and profile support
+  _Done when:_ `skip_files` is a string slice in viper defaults; `applyProfile` applies profile-level `skip_files`; tested.
+
+- [x] **[cmd/init]** Apply sparse-checkout after init when `skip_files` is set
+  _Done when:_ `dof init` with `skip_files` configured writes sparse-checkout patterns and removes excluded files from the working tree; tested.
+
+- [x] **[cmd/checkout]** Apply sparse-checkout after checkout and skip backup of excluded files
+  _Done when:_ `dof checkout` skips renaming files in `skip_files` and applies sparse-checkout after checkout; tested.
+
+- [x] **[Testing]** Add unit tests for `isSkipped` and `applySkipFiles`
+  _Done when:_ Tests cover empty list, matching files, non-matching files, and full sparse-checkout flow with file removal.

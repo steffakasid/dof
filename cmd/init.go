@@ -79,7 +79,7 @@ Example usage:
 			}
 		}
 
-		return nil
+		return applySkipFiles()
 	},
 }
 
@@ -164,4 +164,63 @@ func doNotShowUntrackedFiles() error {
 	gitConfigArgs := []string{"config", "--local", "status.showUntrackedFiles", "no"}
 	gitConfigure.Args = append(gitConfigure.Args, gitConfigArgs...)
 	return execCmdAndPrint(&gitConfigure)
+}
+
+func applySkipFiles() error {
+	skipFiles := viper.GetStringSlice("skip_files")
+	if len(skipFiles) == 0 {
+		return nil
+	}
+
+	logger.Info("Configuring sparse-checkout to skip files...")
+
+	// Enable sparse-checkout in non-cone mode
+	gitConfig := *gitAlias
+	gitConfig.Args = append(gitConfig.Args, "config", "--local", "core.sparseCheckout", "true")
+	if err := execCmdAndPrint(&gitConfig); err != nil {
+		return fmt.Errorf("failed to enable sparse-checkout: %w", err)
+	}
+
+	// Write sparse-checkout patterns: include all, then exclude each skip file
+	sparseFile := path.Join(viper.GetString("repository"), "info", "sparse-checkout")
+	if err := os.MkdirAll(path.Dir(sparseFile), 0700); err != nil {
+		return fmt.Errorf("failed to create info directory: %w", err)
+	}
+
+	file, err := os.Create(sparseFile)
+	if err != nil {
+		return fmt.Errorf("failed to create sparse-checkout file: %w", err)
+	}
+	defer func() { _ = file.Close() }()
+
+	writer := bufio.NewWriter(file)
+	if _, err := writer.WriteString("/*\n"); err != nil {
+		return fmt.Errorf("failed to write sparse-checkout pattern: %w", err)
+	}
+	for _, skip := range skipFiles {
+		if _, err := writer.WriteString("!" + skip + "\n"); err != nil {
+			return fmt.Errorf("failed to write sparse-checkout pattern: %w", err)
+		}
+	}
+	if err := writer.Flush(); err != nil {
+		return fmt.Errorf("failed to flush sparse-checkout file: %w", err)
+	}
+
+	// Apply sparse-checkout to working tree
+	gitReadTree := *gitAlias
+	gitReadTree.Args = append(gitReadTree.Args, "read-tree", "-mu", "HEAD")
+	if err := execCmdAndPrint(&gitReadTree); err != nil {
+		return fmt.Errorf("failed to apply sparse-checkout: %w", err)
+	}
+
+	return nil
+}
+
+func isSkipped(file string, skipFiles []string) bool {
+	for _, skip := range skipFiles {
+		if file == skip {
+			return true
+		}
+	}
+	return false
 }

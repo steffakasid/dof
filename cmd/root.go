@@ -85,6 +85,7 @@ func initFlags() {
 
 	viper.SetDefault("repository", path.Join(userHomeDir, ".dof"))
 	viper.SetDefault("branch", "main")
+	viper.SetDefault("skip_files", []string{})
 
 	// If a profile is selected, override defaults from profile config
 	if profileName != "" {
@@ -124,6 +125,9 @@ func applyProfile(name string) {
 	}
 	if branch := viper.GetString(profileKey + ".branch"); branch != "" {
 		viper.Set("branch", branch)
+	}
+	if skipFiles := viper.GetStringSlice(profileKey + ".skip_files"); len(skipFiles) > 0 {
+		viper.Set("skip_files", skipFiles)
 	}
 }
 
