@@ -96,6 +96,43 @@ Configuration is managed by **viper** with the following precedence
 On every successful run the merged config is written back to the YAML
 file via `viper.WriteConfig()`.
 
+### 4.1 Skip Files (Sparse Checkout)
+
+The `skip_files` option is a list of file paths to exclude from the
+working tree. It maps to git's sparse-checkout feature in non-cone
+(pattern) mode.
+
+**Config example (`$HOME/.dof.yaml`):**
+
+```yaml
+repository: /home/user/.dof
+branch: main
+skip_files:
+  - README.md
+  - LICENSE
+  - scm-info.yaml
+
+profiles:
+  work:
+    repository: /home/user/.dof-work
+    skip_files:
+      - README.adoc
+```
+
+**Implementation:** A helper function `applySkipFiles()` in `init.go`:
+
+1. Reads `skip_files` from viper (string slice, default empty).
+2. If the list is empty, disables sparse-checkout and returns.
+3. Enables sparse-checkout in non-cone mode.
+4. Writes patterns: `/*` (include all) followed by `!<file>` for each
+   entry.
+5. Runs `git read-tree -mu HEAD` to apply the rules to the working
+   tree.
+
+This function is called at the end of `dof init` and `dof checkout`.
+Once set, git pull/merge automatically respects sparse-checkout rules,
+so `dof sync` needs no extra logic.
+
 ## 5. Git Command Execution
 
 A global `*exec.Cmd` template (`gitAlias`) is built once during flag

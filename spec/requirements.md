@@ -142,3 +142,22 @@ home directory without turning `$HOME` into a regular git repo.
 - Conflicting or redundant flags are removed.
 - Flag names follow a consistent naming convention.
 - Verify that all defined flags work as intended
+
+### REQ-13 Skip files from checkout
+
+> As a user, I want to exclude certain files (e.g. `README.md`,
+> `LICENSE`, `scm-info.yaml`) from being checked out into my working
+> tree so that repository metadata does not clutter my home directory.
+
+**Acceptance criteria:**
+
+- A `skip_files` list can be configured in the config file, via
+  environment variable, or per profile.
+- Files listed in `skip_files` are not checked out to the working tree.
+- `dof checkout` applies the skip list after cloning.
+- `dof init` applies the skip list after initialising.
+- `dof sync` (pull) respects the skip list — skipped files stay absent.
+- The feature uses git sparse-checkout so the exclusion persists across
+  git operations without additional wrapper logic.
+- Changing the config and re-running `dof init` or `dof checkout`
+  updates the sparse-checkout rules.

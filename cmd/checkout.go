@@ -64,7 +64,11 @@ Example:
 		logger.Info("Checkout branch...")
 		gitCheckout := *gitAlias
 		gitCheckout.Args = append(gitCheckout.Args, "checkout", viper.GetString("branch"))
-		return execCmdAndPrint(&gitCheckout)
+		if err := execCmdAndPrint(&gitCheckout); err != nil {
+			return err
+		}
+
+		return applySkipFiles()
 	},
 }
 
@@ -87,8 +91,13 @@ func renameOldFiles() error {
 		return err
 	}
 	files := strings.Split(filesString, "\n")
+	skipFiles := viper.GetStringSlice("skip_files")
 	for _, file := range files {
 		if file == "" {
+			continue
+		}
+		if isSkipped(file, skipFiles) {
+			logger.Infof("Skipping %s (in skip_files)", file)
 			continue
 		}
 		logger.Infof("Rename %s to %s", path.Join(workDir, file), path.Join(workDir, file+"_before_dof"))

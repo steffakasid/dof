@@ -268,6 +268,7 @@ func TestApplyProfile(t *testing.T) {
 			viper.Reset()
 			viper.SetDefault("repository", "/default/.dof")
 			viper.SetDefault("branch", "main")
+			viper.SetDefault("skip_files", []string{})
 			tt.setupConfig()
 
 			applyProfile(tt.profile)
@@ -276,4 +277,104 @@ func TestApplyProfile(t *testing.T) {
 			assert.Equal(t, tt.wantBranch, viper.GetString("branch"))
 		})
 	}
+}
+
+func TestApplyProfileWithSkipFiles(t *testing.T) {
+	viper.Reset()
+	viper.SetDefault("repository", "/default/.dof")
+	viper.SetDefault("branch", "main")
+	viper.SetDefault("skip_files", []string{})
+	viper.Set("profiles.work.repository", "/tmp/work-dof")
+	viper.Set("profiles.work.skip_files", []string{"README.md", "LICENSE"})
+
+	applyProfile("work")
+
+	assert.Equal(t, []string{"README.md", "LICENSE"}, viper.GetStringSlice("skip_files"))
+}
+
+func TestIsSkipped(t *testing.T) {
+	tests := []struct {
+		name      string
+		file      string
+		skipFiles []string
+		want      bool
+	}{
+		{
+			name:      "file is in skip list",
+			file:      "README.md",
+			skipFiles: []string{"README.md", "LICENSE"},
+			want:      true,
+		},
+		{
+			name:      "file is not in skip list",
+			file:      ".zshrc",
+			skipFiles: []string{"README.md", "LICENSE"},
+			want:      false,
+		},
+		{
+			name:      "empty skip list",
+			file:      "README.md",
+			skipFiles: []string{},
+			want:      false,
+		},
+		{
+			name:      "nil skip list",
+			file:      "README.md",
+			skipFiles: nil,
+			want:      false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, isSkipped(tt.file, tt.skipFiles))
+		})
+	}
+}
+
+func TestApplySkipFilesEmpty(t *testing.T) {
+	setupTestEnv(t)
+	viper.Set("skip_files", []string{})
+
+	err := applySkipFiles()
+	require.NoError(t, err)
+}
+
+func TestApplySkipFiles(t *testing.T) {
+	tmpDir := setupTestEnv(t)
+	repoPath := filepath.Join(tmpDir, ".dof")
+
+	err := os.MkdirAll(repoPath, 0700)
+	require.NoError(t, err)
+
+	err = initCmd.RunE(initCmd, nil)
+	require.NoError(t, err)
+
+	// Add a README.md to the repo
+	readmeFile := filepath.Join(tmpDir, "README.md")
+	err = os.WriteFile(readmeFile, []byte("# My Dotfiles"), 0600)
+	require.NoError(t, err)
+
+	gitAlias = exec.Command("git", "--git-dir="+repoPath, "--work-tree="+tmpDir)
+	err = addCmd.RunE(addCmd, []string{readmeFile})
+	require.NoError(t, err)
+
+	// Now configure skip_files and apply
+	viper.Set("skip_files", []string{"README.md"})
+	gitAlias = exec.Command("git", "--git-dir="+repoPath, "--work-tree="+tmpDir)
+
+	err = applySkipFiles()
+	require.NoError(t, err)
+
+	// Verify README.md was removed from working tree
+	assert.NoFileExists(t, readmeFile)
+
+	// Verify sparse-checkout file was written
+	sparseFile := filepath.Join(repoPath, "info", "sparse-checkout")
+	assert.FileExists(t, sparseFile)
+
+	content, err := os.ReadFile(sparseFile)
+	require.NoError(t, err)
+	assert.Contains(t, string(content), "/*")
+	assert.Contains(t, string(content), "!README.md")
 }
