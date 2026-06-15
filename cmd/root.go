@@ -60,11 +60,6 @@ func Execute(v string) {
 	if err := rootCmd.Execute(); err != nil {
 		os.Exit(1)
 	}
-
-	if err := viper.WriteConfig(); err != nil {
-		fmt.Fprintln(os.Stderr, "Error writing config:", err)
-		os.Exit(1)
-	}
 }
 
 func init() {
