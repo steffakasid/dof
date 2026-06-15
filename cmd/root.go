@@ -41,6 +41,7 @@ var rootCmd = &cobra.Command{
 It uses a configuration file, environment variables, or command flags to select the repository and branch.
 
 This tool requires git to be installed and available in PATH.`,
+	TraverseChildren: true,
 }
 
 var (
