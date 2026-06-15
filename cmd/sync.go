@@ -54,6 +54,7 @@ Examples:
 				return err
 			}
 			logger.Debugf("Status of dof %s", status)
+			needsPush := false
 			if len(status) > 0 {
 				logger.Info("Committing changed files...")
 				gitCommit := *gitAlias
@@ -61,12 +62,28 @@ Examples:
 				if err := execCmdAndPrint(&gitCommit); err != nil {
 					return err
 				}
-				logger.Info("Pushing files")
+				needsPush = true
+			}
+
+			if !needsPush {
+				// Check if there are unpushed commits (e.g. from dof add)
+				gitLog := *gitAlias
+				gitLog.Args = append(gitLog.Args, "log", "@{u}..", "--oneline")
+				unpushed, err := execCmdAndReturn(&gitLog)
+				if err == nil && len(unpushed) > 0 {
+					needsPush = true
+				}
+			}
+
+			if needsPush {
+				logger.Info("Pushing files...")
 				gitPush := *gitAlias
 				gitPush.Args = append(gitPush.Args, "push", "origin", viper.GetString("branch"), "-u")
 				if err := execCmdAndPrint(&gitPush); err != nil {
 					return err
 				}
+			} else {
+				logger.Info("Nothing to push.")
 			}
 		}
 		logger.Debugf("Pull only: %v", pullOnly)
