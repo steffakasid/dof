@@ -92,6 +92,7 @@ func initFlags() {
 
 	// If a profile is selected, override defaults from profile config
 	if profileName != "" {
+		logger.Infof("Using profile: %s", profileName)
 		applyProfile(profileName)
 	}
 
@@ -107,7 +108,8 @@ func initFlags() {
 	workDir, repoPathName = filepath.Split(viper.GetString("repository"))
 	gitAlias = exec.Command("git", "--git-dir="+viper.GetString("repository"), "--work-tree="+workDir)
 
-	logger.Debugln("branch:", viper.GetString("branch"))
+	logger.Debugf("repository: %s", viper.GetString("repository"))
+	logger.Debugf("branch: %s", viper.GetString("branch"))
 	if err := viper.BindPFlag("branch", rootCmd.PersistentFlags().Lookup("branch")); err != nil {
 		fmt.Fprintln(os.Stderr, "Error binding branch flag:", err)
 		os.Exit(1)
