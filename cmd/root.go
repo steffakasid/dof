@@ -74,7 +74,7 @@ func init() {
 	}
 
 	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "Config file (default is $HOME/.dof.yaml)")
-	rootCmd.PersistentFlags().StringVar(&profileName, "profile", "", "Named profile to use from the config file")
+	rootCmd.PersistentFlags().StringVar(&profileName, "profile", "default", "Named profile to use from the config file")
 	rootCmd.PersistentFlags().StringP("repository", "r", "", "Path to the bare git repository")
 	rootCmd.PersistentFlags().StringP("branch", "b", "", "Git branch to track in the bare repository")
 
