@@ -20,6 +20,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var (
+	force bool
+)
+
 // addCmd represents the add command
 var addCmd = &cobra.Command{
 	Use:   "add <file-or-path-to-file>",
@@ -40,6 +44,7 @@ var addCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(addCmd)
+	addCmd.Flags().BoolVarP(&force, "force", "f", false, "Force add file")
 	if logger == nil {
 		logger = NewOutputLogger(1)
 	}
@@ -49,7 +54,11 @@ func addAndCommit(file string) error {
 	logger.Infof("Add file %s to dof repository", file)
 	// config add .vimrc
 	gitAdd := *gitAlias
-	gitAddArgs := []string{"add", file}
+	gitAddArgs := []string{"add"}
+	if force {
+		gitAddArgs = append([]string{"-f"}, gitAddArgs...)
+	}
+	gitAddArgs = append(gitAddArgs, file)
 	gitAdd.Args = append(gitAdd.Args, gitAddArgs...)
 	if err := execCmdAndPrint(&gitAdd); err != nil {
 		return err
