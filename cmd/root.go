@@ -132,7 +132,9 @@ func applyProfile(name string) {
 	globalSkip := viper.GetStringSlice("skip_files")
 	profileSkip := viper.GetStringSlice(profileKey + ".skip_files")
 	if len(profileSkip) > 0 {
-		merged := append(globalSkip, profileSkip...)
+		merged := []string{}
+		merged = append(merged, globalSkip...)
+		merged = append(merged, profileSkip...)
 		viper.Set("skip_files", deduplicate(merged))
 	}
 }
