@@ -61,7 +61,7 @@ dof supports configuration in several ways:
 
 The default config file is `$HOME/.dof.yaml`.
 
-Profiles are defined under `profiles.<name>` and can override `repository`, `branch`, and `skip_files`.
+Profiles are defined under `profiles.<name>` and can override `repository`, `branch`, `skip_files`, and `git_env`.
 
 The `--profile` flag selects one named profile from this single config file. That means you can keep multiple repository definitions in one shared config and switch between them at runtime.
 
@@ -74,6 +74,8 @@ branch: main
 skip_files:
   - README.md
   - LICENSE
+git_env:
+  GIT_CONFIG_GLOBAL: ~/.gitconfig
 profiles:
   work:
     repository: /home/user/.dof-work
@@ -81,6 +83,8 @@ profiles:
     skip_files:
       - scm-info.yaml
       - README.adoc
+    git_env:
+      GIT_CONFIG_GLOBAL: ~/.gitconfig_work
   personal:
     repository: /home/user/.dof-personal
     branch: main
@@ -90,6 +94,31 @@ Use profiles like this:
 
 * `dof --profile work init`
 * `dof --profile personal sync`
+
+=== Git environment variables
+
+The `git_env` option is a map of environment variables that dof applies to
+every git invocation (`init`, `checkout`, `add`, `sync`, `status`, `alias`).
+Use it to control git's behaviour without changing your global git setup — for
+example, to point git at a dedicated global config file:
+
+[source,yaml]
+----
+git_env:
+  GIT_CONFIG_GLOBAL: ~/.gitconfig
+  GIT_SSH_COMMAND: ssh -i ~/.ssh/dof_key
+----
+
+Notes:
+
+* `git_env` is configured only in the config file (globally and per profile);
+  there is no CLI flag or `DOF_` environment variable for it.
+* Profile values win over global values per key; keys set only globally are
+  merged in.
+* The variables are added on top of your existing shell environment — you only
+  list additions or overrides; `PATH`, `HOME`, and the rest are kept.
+* Values are passed to git verbatim; dof does not expand `~` or `$VAR`
+  (git itself expands `~` in paths such as `GIT_CONFIG_GLOBAL`).
 
 === Adding a profile
 

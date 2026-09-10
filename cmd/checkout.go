@@ -19,7 +19,6 @@ limitations under the License.
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"path"
 	"strings"
 
@@ -46,7 +45,7 @@ Example:
   dof checkout git@github.com:steffakasid/my-dot-files.git`,
 	RunE: func(_ *cobra.Command, args []string) error {
 		logger.Info("Cloning bare repo...")
-		gitClone := exec.Command("git", "clone", "--bare", args[0], viper.GetString("repository"))
+		gitClone := newGitCmd("clone", "--bare", args[0], viper.GetString("repository"))
 		if err := execCmdAndPrint(gitClone); err != nil {
 			return err
 		}
