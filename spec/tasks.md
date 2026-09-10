@@ -104,3 +104,40 @@ Legend: `[x]` = done, `[ ]` = to do
 
 - [x] **[Testing]** Add unit tests for `isSkipped` and `applySkipFiles`
   _Done when:_ Tests cover empty list, matching files, non-matching files, and full sparse-checkout flow with file removal.
+
+---
+
+## 8. Git Environment Variables (REQ-14)
+
+- [x] **[Config]** Add `git_env` viper default and profile merge
+  _Done when:_ `git_env` defaults to an empty map; `applyProfile` merges
+  global and profile `git_env` with profile values winning per key and
+  global-only keys retained; merged map stored via `viper.Set`; tested.
+
+- [x] **[cmd/exec]** Add `newGitCmd` helper and shared env composition
+  _Done when:_ A helper builds the git environment as `os.Environ()` plus
+  `git_env` `KEY=value` entries; `newGitCmd(args…)` returns an `*exec.Cmd`
+  with that `Env`; when `git_env` is empty the env equals `os.Environ()`;
+  tested.
+
+- [x] **[cmd/root]** Set `gitAlias.Env` once in `initFlags`
+  _Done when:_ `gitAlias.Env` is populated from the shared composition so
+  every command that copies the template inherits it; tested.
+
+- [x] **[cmd/init]** Build `git init --bare` via `newGitCmd`
+  _Done when:_ The standalone init command receives the composed `git_env`
+  environment; tested.
+
+- [x] **[cmd/checkout]** Build `git clone --bare` via `newGitCmd`
+  _Done when:_ The standalone clone command receives the composed `git_env`
+  environment; tested.
+
+- [x] **[Testing]** Add tests for `git_env` composition, merge, and coverage
+  _Done when:_ Tests cover the Gherkin scenarios in design §9.4 — global
+  applied, empty no-op, profile override per key, global-only key merged,
+  verbatim (no expansion), and both standalone commands (`init`, `clone`)
+  receiving the env; coverage ≥ 80 % for the new logic.
+
+- [x] **[Docs]** Document `git_env` in `README.adoc`
+  _Done when:_ README describes the `git_env` config key, per-profile
+  usage, merge precedence, and a `GIT_CONFIG_GLOBAL` example.

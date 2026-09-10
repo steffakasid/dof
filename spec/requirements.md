@@ -161,3 +161,29 @@ home directory without turning `$HOME` into a regular git repo.
   git operations without additional wrapper logic.
 - Changing the config and re-running `dof init` or `dof checkout`
   updates the sparse-checkout rules.
+
+### REQ-14 Configure environment variables for git execution
+
+> As a user, I want to configure environment variables that are applied
+> whenever dof executes git (e.g. `GIT_CONFIG_GLOBAL=~/.gitconfig`) so
+> that I can control git's behaviour without modifying my global git
+> setup.
+
+**Acceptance criteria:**
+
+- A `git_env` map (variable name → value) can be configured in the
+  config file.
+- `git_env` is configured per profile; there is no CLI flag or `DOF_`
+  environment variable override.
+- Profile-level `git_env` values win over global `git_env` values;
+  keys not set in the profile are merged in from the global map.
+- The configured variables are added on top of the inherited OS
+  environment when spawning git — only additions or overrides need to
+  be listed, and existing variables (e.g. `PATH`, `HOME`) are kept.
+- Values are passed to git verbatim, without expansion of `~` or other
+  environment variables by dof.
+- The variables are applied to every git invocation dof makes
+  (`init`, `checkout`, `add`, `sync`, `status`, `alias`), regardless of
+  whether a given command requires them.
+- When `git_env` is empty, git runs with the unmodified inherited
+  environment.

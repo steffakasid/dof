@@ -85,6 +85,7 @@ func initFlags() {
 	viper.SetDefault("repository", path.Join(userHomeDir, ".dof"))
 	viper.SetDefault("branch", "main")
 	viper.SetDefault("skip_files", []string{})
+	viper.SetDefault("git_env", map[string]string{})
 
 	// If a profile is selected, override defaults from profile config
 	if profileName == "" {
@@ -106,6 +107,7 @@ func initFlags() {
 
 	workDir, repoPathName = filepath.Split(viper.GetString("repository"))
 	gitAlias = exec.Command("git", "--git-dir="+viper.GetString("repository"), "--work-tree="+workDir)
+	gitAlias.Env = buildGitEnv()
 
 	logger.Debugf("repository: %s", viper.GetString("repository"))
 	logger.Debugf("branch: %s", viper.GetString("branch"))
@@ -136,6 +138,20 @@ func applyProfile(name string) {
 		merged = append(merged, globalSkip...)
 		merged = append(merged, profileSkip...)
 		viper.Set("skip_files", deduplicate(merged))
+	}
+
+	// Merge global git_env with profile-specific git_env (profile wins per key)
+	globalEnv := viper.GetStringMapString("git_env")
+	profileEnv := viper.GetStringMapString(profileKey + ".git_env")
+	if len(profileEnv) > 0 {
+		merged := make(map[string]string, len(globalEnv)+len(profileEnv))
+		for k, v := range globalEnv {
+			merged[k] = v
+		}
+		for k, v := range profileEnv {
+			merged[k] = v
+		}
+		viper.Set("git_env", merged)
 	}
 }
 

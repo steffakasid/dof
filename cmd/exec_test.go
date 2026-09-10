@@ -1,9 +1,11 @@
 package cmd
 
 import (
+	"os"
 	"os/exec"
 	"testing"
 
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -12,6 +14,51 @@ func init() {
 	if logger == nil {
 		logger = NewOutputLogger(1)
 	}
+}
+
+func TestBuildGitEnv(t *testing.T) {
+	t.Run("empty git_env returns os.Environ unchanged", func(t *testing.T) {
+		viper.Reset()
+		viper.SetDefault("git_env", map[string]string{})
+
+		env := buildGitEnv()
+		assert.ElementsMatch(t, os.Environ(), env)
+	})
+
+	t.Run("git_env entries are appended on top of os.Environ", func(t *testing.T) {
+		viper.Reset()
+		viper.Set("git_env", map[string]string{"GIT_CONFIG_GLOBAL": "~/.gitconfig"})
+
+		env := buildGitEnv()
+		assert.Contains(t, env, "GIT_CONFIG_GLOBAL=~/.gitconfig")
+		// existing OS environment is retained
+		for _, e := range os.Environ() {
+			assert.Contains(t, env, e)
+		}
+	})
+
+	t.Run("values are passed verbatim without expansion", func(t *testing.T) {
+		viper.Reset()
+		viper.Set("git_env", map[string]string{"GIT_CONFIG_GLOBAL": "~/.gitconfig"})
+
+		env := buildGitEnv()
+		assert.Contains(t, env, "GIT_CONFIG_GLOBAL=~/.gitconfig")
+		// ensure "~" was not expanded to a home directory path
+		for _, e := range env {
+			assert.NotContains(t, e, "GIT_CONFIG_GLOBAL="+os.Getenv("HOME"))
+		}
+	})
+}
+
+func TestNewGitCmd(t *testing.T) {
+	viper.Reset()
+	viper.Set("git_env", map[string]string{"GIT_CONFIG_GLOBAL": "~/.gitconfig"})
+
+	cmd := newGitCmd("status")
+	require.NotNil(t, cmd)
+	assert.Equal(t, "git", cmd.Args[0])
+	assert.Equal(t, "status", cmd.Args[1])
+	assert.Contains(t, cmd.Env, "GIT_CONFIG_GLOBAL=~/.gitconfig")
 }
 
 func TestExecCmdAndPrint(t *testing.T) {

@@ -16,8 +16,34 @@ limitations under the License.
 import (
 	"bytes"
 	"fmt"
+	"os"
 	"os/exec"
+
+	"github.com/spf13/viper"
 )
+
+// buildGitEnv returns the environment used for every git invocation:
+// the inherited OS environment (os.Environ()) with the configured
+// git_env entries appended as KEY=value. Values are used verbatim (no
+// expansion). When git_env is empty the result equals os.Environ().
+func buildGitEnv() []string {
+	gitEnv := viper.GetStringMapString("git_env")
+	env := os.Environ()
+	for k, v := range gitEnv {
+		env = append(env, k+"="+v)
+	}
+	return env
+}
+
+// newGitCmd builds an *exec.Cmd for the git binary with the composed
+// git_env environment already applied. Used for standalone commands
+// (git init --bare, git clone --bare) that cannot copy the gitAlias
+// template because the repository does not yet exist.
+func newGitCmd(args ...string) *exec.Cmd {
+	cmd := exec.Command("git", args...)
+	cmd.Env = buildGitEnv()
+	return cmd
+}
 
 func execCmdAndPrint(cmd *exec.Cmd) error {
 	var out bytes.Buffer

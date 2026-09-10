@@ -20,7 +20,6 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"os/exec"
 	"path"
 
 	"github.com/spf13/cobra"
@@ -49,7 +48,7 @@ Example usage:
 	RunE: func(_ *cobra.Command, _ []string) error {
 		logger.Info("Initialize git bare repository...")
 		// git init --bare $HOME/.cfg
-		gitInit := exec.Command("git", "init", "--bare", viper.GetString("repository"))
+		gitInit := newGitCmd("init", "--bare", viper.GetString("repository"))
 		if err := execCmdAndPrint(gitInit); err != nil {
 			return err
 		}
