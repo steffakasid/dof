@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"slices"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -216,10 +217,5 @@ func applySkipFiles() error {
 }
 
 func isSkipped(file string, skipFiles []string) bool {
-	for _, skip := range skipFiles {
-		if file == skip {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(skipFiles, file)
 }

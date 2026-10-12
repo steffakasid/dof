@@ -39,41 +39,41 @@ func (l *Logger) generateFields() log.Fields {
 }
 
 // Debug logs a debug message with optional caller fields.
-func (l *Logger) Debug(arg ...interface{}) {
+func (l *Logger) Debug(arg ...any) {
 	l.WithFields(l.generateFields()).Debug(arg...)
 }
 
 // Debugf logs a formatted debug message with optional caller fields.
-func (l *Logger) Debugf(format string, arg ...interface{}) {
+func (l *Logger) Debugf(format string, arg ...any) {
 	l.WithFields(l.generateFields()).Debugf(format, arg...)
 }
 
 // Info logs an info message with optional caller fields.
-func (l *Logger) Info(arg ...interface{}) {
+func (l *Logger) Info(arg ...any) {
 	l.WithFields(l.generateFields()).Info(arg...)
 }
 
 // Infof logs a formatted info message with optional caller fields.
-func (l *Logger) Infof(format string, arg ...interface{}) {
+func (l *Logger) Infof(format string, arg ...any) {
 	l.WithFields(l.generateFields()).Infof(format, arg...)
 }
 
 // Error logs an error message with optional caller fields.
-func (l *Logger) Error(arg ...interface{}) {
+func (l *Logger) Error(arg ...any) {
 	l.WithFields(l.generateFields()).Error(arg...)
 }
 
 // Errorf logs a formatted error message with optional caller fields.
-func (l *Logger) Errorf(format string, arg ...interface{}) {
+func (l *Logger) Errorf(format string, arg ...any) {
 	l.WithFields(l.generateFields()).Errorf(format, arg...)
 }
 
 // Fatal logs a fatal message with optional caller fields and exits.
-func (l *Logger) Fatal(arg ...interface{}) {
+func (l *Logger) Fatal(arg ...any) {
 	l.WithFields(l.generateFields()).Fatal(arg...)
 }
 
 // Fatalf logs a formatted fatal message with optional caller fields and exits.
-func (l *Logger) Fatalf(format string, arg ...interface{}) {
+func (l *Logger) Fatalf(format string, arg ...any) {
 	l.WithFields(l.generateFields()).Fatalf(format, arg...)
 }

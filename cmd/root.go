@@ -19,6 +19,7 @@ limitations under the License.
 
 import (
 	"fmt"
+	"maps"
 	"os"
 	"os/exec"
 	"path"
@@ -145,12 +146,8 @@ func applyProfile(name string) {
 	profileEnv := viper.GetStringMapString(profileKey + ".git_env")
 	if len(profileEnv) > 0 {
 		merged := make(map[string]string, len(globalEnv)+len(profileEnv))
-		for k, v := range globalEnv {
-			merged[k] = v
-		}
-		for k, v := range profileEnv {
-			merged[k] = v
-		}
+		maps.Copy(merged, globalEnv)
+		maps.Copy(merged, profileEnv)
 		viper.Set("git_env", merged)
 	}
 }
