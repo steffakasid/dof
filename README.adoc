@@ -119,6 +119,12 @@ Notes:
   list additions or overrides; `PATH`, `HOME`, and the rest are kept.
 * Values are passed to git verbatim; dof does not expand `~` or `$VAR`
   (git itself expands `~` in paths such as `GIT_CONFIG_GLOBAL`).
+* Keys are upper-cased before they are handed to git. The config parser
+  lower-cases every key it reads, so dof restores the upper-case form that
+  git's variables use (`GIT_CONFIG_GLOBAL`, `GIT_AUTHOR_NAME`,
+  `GIT_SSH_COMMAND`, ...). As a result, `git_env` only supports environment
+  variables whose names are upper-case — which is the case for all git
+  variables.
 
 === Adding a profile
 
