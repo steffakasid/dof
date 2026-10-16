@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/spf13/viper"
 )
@@ -26,11 +27,17 @@ import (
 // the inherited OS environment (os.Environ()) with the configured
 // git_env entries appended as KEY=value. Values are used verbatim (no
 // expansion). When git_env is empty the result equals os.Environ().
+//
+// Keys are upper-cased because viper lower-cases every key it reads from a
+// config file, while environment variable names are case-sensitive and git's
+// own variables (GIT_CONFIG_GLOBAL, GIT_AUTHOR_NAME, ...) are upper-case. Without
+// this normalization a configured GIT_CONFIG_GLOBAL would be exported as the
+// ignored "git_config_global" and git would fall back to no identity.
 func buildGitEnv() []string {
 	gitEnv := viper.GetStringMapString("git_env")
 	env := os.Environ()
 	for k, v := range gitEnv {
-		env = append(env, k+"="+v)
+		env = append(env, strings.ToUpper(k)+"="+v)
 	}
 	return env
 }
