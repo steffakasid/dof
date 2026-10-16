@@ -48,6 +48,18 @@ func TestBuildGitEnv(t *testing.T) {
 			assert.NotContains(t, e, "GIT_CONFIG_GLOBAL="+os.Getenv("HOME"))
 		}
 	})
+
+	t.Run("lower-cased config keys are upper-cased so git honors them", func(t *testing.T) {
+		// viper lower-cases every key read from a config file, so a configured
+		// GIT_CONFIG_GLOBAL arrives here as git_config_global. buildGitEnv must
+		// restore the upper-case name git actually reads.
+		viper.Reset()
+		viper.Set("git_env", map[string]string{"git_config_global": "/tmp/custom-gitconfig"})
+
+		env := buildGitEnv()
+		assert.Contains(t, env, "GIT_CONFIG_GLOBAL=/tmp/custom-gitconfig")
+		assert.NotContains(t, env, "git_config_global=/tmp/custom-gitconfig")
+	})
 }
 
 func TestNewGitCmd(t *testing.T) {
